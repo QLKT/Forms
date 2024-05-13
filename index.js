@@ -18,7 +18,7 @@
             e.currentTarget.classList.remove('show');
          });
       });
-      var Carousel1 = new bootstrap.Carousel('#Carousel1', {interval: 800, pause: 'hover'});
+      var Carousel1 = new bootstrap.Carousel('#Carousel1', {interval: 1000, pause: 'hover'});
    });
    
    $(document).ready(function()
@@ -30,13 +30,13 @@
       });
       $("#SlideShow1").slideshow(
       {
-         interval: 2800,
-         type: 'random',
+         interval: 2000,
+         type: 'sequence',
          effect: 'slide',
          direction: 'left',
          pagination: false,
          fullscreen: 0,
          maxWidth: 1920,
-         effectlength: 2000
+         effectlength: 1000
       });
    });

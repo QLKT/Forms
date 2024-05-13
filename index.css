@@ -645,6 +645,7 @@ body
    width: 100%;
    height: 100%;
    position: relative;
+   perspective: 1200px;
 }
 .carousel.pointer-event
 {
@@ -666,17 +667,11 @@ body
    margin-right: -100%;
    -webkit-backface-visibility: hidden;
    backface-visibility: hidden;
-   transition: transform 800ms ease-in-out;
+   transform: translate3d(0, 0, 0);
+   transform-style: preserve-3d;
+   transition: opacity 1000ms ease-in-out;
    height: 100%;
    text-align: center;
-}
-#Carousel1 .carousel-item-next:not(.carousel-item-start), #Carousel1 .active.carousel-item-end
-{
-   transform: translateX(100%);
-}
-#Carousel1 .carousel-item-prev:not(.carousel-item-end), #Carousel1 .active.carousel-item-start
-{
-   transform: translateX(-100%);
 }
 #Carousel1 .carousel-item-inner
 {
@@ -697,11 +692,23 @@ body
 {
    display: block;
 }
+#Carousel1 .carousel-inner > .active
+{
+   animation: Carousel1-animation-show 1000ms ease 0ms both;
+}
 #Carousel1 .carousel-inner > .carousel-item-next, #Carousel1 .carousel-inner > .carousel-item-prev
 {
    position: absolute;
    top: 0;
    width: 100%;
+}
+#Carousel1 .carousel-inner > .carousel-item-next.carousel-item-start, #Carousel1 .carousel-inner > .carousel-item-prev.carousel-item-end
+{
+   animation: Carousel1-animation-show 1000ms ease 0ms both;
+}
+#Carousel1 .carousel-inner > .active.carousel-item-start, #Carousel1 .carousel-inner > .active.carousel-item-end
+{
+   animation: Carousel1-animation-hide 1000ms ease both;
 }
 #Carousel1 .carousel-indicators
 {
@@ -738,6 +745,16 @@ body
    display: inline-block;
    float: left;
    height: 559px;
+}
+@keyframes Carousel1-animation-show
+{
+   0%   { transform: translateX(100%); }
+   100% { transform: translateX(0); }
+}
+@keyframes Carousel1-animation-hide
+{
+   0%   { transform: translateX(0); }
+   100% { transform: translateX(-100%); }
 }
 #wb_Heading1
 {
