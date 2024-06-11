@@ -80,7 +80,7 @@ body
    margin-right: -15px;
    margin-left: -15px;
 }
-#LayoutGrid5 > .row > .col-1
+#LayoutGrid5 > .row > .col-1, #LayoutGrid5 > .row > .col-2, #LayoutGrid5 > .row > .col-3
 {
    box-sizing: border-box;
    font-size: 0;
@@ -93,7 +93,7 @@ body
 {
    width: 1070px;
 }
-#LayoutGrid5 > .row > .col-1
+#LayoutGrid5 > .row > .col-1, #LayoutGrid5 > .row > .col-2, #LayoutGrid5 > .row > .col-3
 {
    float: left;
 }
@@ -103,7 +103,25 @@ body
    background-image: none;
    border: 0px solid #FFFFFF;
    border-radius: 0px;
-   width: 100%;
+   width: 16.66666667%;
+   text-align: center;
+}
+#LayoutGrid5 > .row > .col-2
+{
+   background-color: transparent;
+   background-image: none;
+   border: 0px solid #FFFFFF;
+   border-radius: 0px;
+   width: 66.66666667%;
+   text-align: center;
+}
+#LayoutGrid5 > .row > .col-3
+{
+   background-color: transparent;
+   background-image: none;
+   border: 0px solid #FFFFFF;
+   border-radius: 0px;
+   width: 16.66666667%;
    text-align: left;
 }
 #LayoutGrid5:before,
@@ -125,7 +143,7 @@ body
 {
    width: 100%;
 }
-#LayoutGrid5 > .row > .col-1
+#LayoutGrid5 > .row > .col-1, #LayoutGrid5 > .row > .col-2, #LayoutGrid5 > .row > .col-3
 {
    float: none;
    width: 100% !important;
@@ -734,8 +752,8 @@ body
    background-image: none;
    border: 0px solid #FFFFFF;
    border-radius: 0px;
-   width: 500px;
-   text-align: center;
+   width: 50%;
+   text-align: left;
 }
 #LayoutGrid8 > .row > .col-2
 {
@@ -743,7 +761,7 @@ body
    background-image: none;
    border: 0px solid #FFFFFF;
    border-radius: 0px;
-   width: 450px;
+   width: 50%;
    text-align: center;
 }
 #LayoutGrid8:before,
@@ -813,7 +831,7 @@ body
    background-image: none;
    border: 0px solid #FFFFFF;
    border-radius: 0px;
-   width: 500px;
+   width: 50%;
    text-align: left;
 }
 #LayoutGrid2 > .row > .col-2
@@ -822,8 +840,8 @@ body
    background-image: none;
    border: 0px solid #FFFFFF;
    border-radius: 0px;
-   width: 450px;
-   text-align: left;
+   width: 50%;
+   text-align: center;
 }
 #LayoutGrid2:before,
 #LayoutGrid2:after,
@@ -892,8 +910,8 @@ body
    background-image: none;
    border: 0px solid #FFFFFF;
    border-radius: 0px;
-   width: 500px;
-   text-align: center;
+   width: 50%;
+   text-align: left;
 }
 #LayoutGrid4 > .row > .col-2
 {
@@ -901,7 +919,7 @@ body
    background-image: none;
    border: 0px solid #FFFFFF;
    border-radius: 0px;
-   width: 450px;
+   width: 50%;
    text-align: center;
 }
 #LayoutGrid4:before,
@@ -1148,7 +1166,7 @@ body
    margin-right: -15px;
    margin-left: -15px;
 }
-#LayoutGrid3 > .row > .col-1
+#LayoutGrid3 > .row > .col-1, #LayoutGrid3 > .row > .col-2, #LayoutGrid3 > .row > .col-3
 {
    box-sizing: border-box;
    font-size: 0;
@@ -1157,7 +1175,11 @@ body
    padding-left: 15px;
    position: relative;
 }
-#LayoutGrid3 > .row > .col-1
+#LayoutGrid3
+{
+   width: 1070px;
+}
+#LayoutGrid3 > .row > .col-1, #LayoutGrid3 > .row > .col-2, #LayoutGrid3 > .row > .col-3
 {
    float: left;
 }
@@ -1167,8 +1189,26 @@ body
    background-image: none;
    border: 0px solid #FFFFFF;
    border-radius: 0px;
-   width: 900px;
+   width: 16.66666667%;
    text-align: center;
+}
+#LayoutGrid3 > .row > .col-2
+{
+   background-color: transparent;
+   background-image: none;
+   border: 0px solid #FFFFFF;
+   border-radius: 0px;
+   width: 66.66666667%;
+   text-align: left;
+}
+#LayoutGrid3 > .row > .col-3
+{
+   background-color: transparent;
+   background-image: none;
+   border: 0px solid #FFFFFF;
+   border-radius: 0px;
+   width: 16.66666667%;
+   text-align: left;
 }
 #LayoutGrid3:before,
 #LayoutGrid3:after,
@@ -1185,7 +1225,11 @@ body
 }
 @media (max-width: 480px)
 {
-#LayoutGrid3 > .row > .col-1
+#LayoutGrid3
+{
+   width: 100%;
+}
+#LayoutGrid3 > .row > .col-1, #LayoutGrid3 > .row > .col-2, #LayoutGrid3 > .row > .col-3
 {
    float: none;
    width: 100% !important;
@@ -1259,8 +1303,8 @@ body
    background-image: none;
    border: 0px solid #FFFFFF;
    border-radius: 0px;
-   width: 500px;
-   text-align: center;
+   width: 50%;
+   text-align: left;
 }
 #LayoutGrid9 > .row > .col-2
 {
@@ -1268,7 +1312,7 @@ body
    background-image: none;
    border: 0px solid #FFFFFF;
    border-radius: 0px;
-   width: 450px;
+   width: 50%;
    text-align: center;
 }
 #LayoutGrid9:before,
@@ -1291,4 +1335,194 @@ body
    float: none;
    width: 100% !important;
 }
+}
+#wb_InlineFrame1
+{
+   box-sizing: border-box;
+   border: 1px solid transparent;
+   border-radius: 0px;
+   margin: 0;
+   overflow: auto;
+   -webkit-overflow-scrolling: touch;
+   position: relative;
+}
+#InlineFrame1
+{
+   border-width: 0;
+   position: absolute;
+   left: 0;
+   top: 0;
+   width: 100%;
+   height: 100%;
+}
+#wb_InlineFrame2
+{
+   box-sizing: border-box;
+   border: 1px solid transparent;
+   border-radius: 0px;
+   margin: 0;
+   overflow: auto;
+   -webkit-overflow-scrolling: touch;
+   position: relative;
+}
+#InlineFrame2
+{
+   border-width: 0;
+   position: absolute;
+   left: 0;
+   top: 0;
+   width: 100%;
+   height: 100%;
+}
+#wb_InlineFrame3
+{
+   box-sizing: border-box;
+   border: 1px solid transparent;
+   border-radius: 0px;
+   margin: 0;
+   overflow: auto;
+   -webkit-overflow-scrolling: touch;
+   position: relative;
+}
+#InlineFrame3
+{
+   border-width: 0;
+   position: absolute;
+   left: 0;
+   top: 0;
+   width: 100%;
+   height: 100%;
+}
+#wb_InlineFrame4
+{
+   box-sizing: border-box;
+   border: 1px solid transparent;
+   border-radius: 0px;
+   margin: 0;
+   overflow: auto;
+   -webkit-overflow-scrolling: touch;
+   position: relative;
+}
+#InlineFrame4
+{
+   border-width: 0;
+   position: absolute;
+   left: 0;
+   top: 0;
+   width: 100%;
+   height: 100%;
+}
+#wb_InlineFrame5
+{
+   box-sizing: border-box;
+   border: 1px solid transparent;
+   border-radius: 0px;
+   margin: 0;
+   overflow: auto;
+   -webkit-overflow-scrolling: touch;
+   position: relative;
+}
+#InlineFrame5
+{
+   border-width: 0;
+   position: absolute;
+   left: 0;
+   top: 0;
+   width: 100%;
+   height: 100%;
+}
+#wb_InlineFrame6
+{
+   box-sizing: border-box;
+   border: 1px solid transparent;
+   border-radius: 0px;
+   margin: 0;
+   overflow: auto;
+   -webkit-overflow-scrolling: touch;
+   position: relative;
+}
+#InlineFrame6
+{
+   border-width: 0;
+   position: absolute;
+   left: 0;
+   top: 0;
+   width: 100%;
+   height: 100%;
+}
+#wb_InlineFrame7
+{
+   box-sizing: border-box;
+   border: 1px solid transparent;
+   border-radius: 0px;
+   margin: 0;
+   overflow: auto;
+   -webkit-overflow-scrolling: touch;
+   position: relative;
+}
+#InlineFrame7
+{
+   border-width: 0;
+   position: absolute;
+   left: 0;
+   top: 0;
+   width: 100%;
+   height: 100%;
+}
+#wb_InlineFrame8
+{
+   box-sizing: border-box;
+   border: 1px solid transparent;
+   border-radius: 0px;
+   margin: 0;
+   overflow: auto;
+   -webkit-overflow-scrolling: touch;
+   position: relative;
+}
+#InlineFrame8
+{
+   border-width: 0;
+   position: absolute;
+   left: 0;
+   top: 0;
+   width: 100%;
+   height: 100%;
+}
+#wb_InlineFrame9
+{
+   box-sizing: border-box;
+   border: 1px solid transparent;
+   border-radius: 0px;
+   margin: 0;
+   overflow: auto;
+   -webkit-overflow-scrolling: touch;
+   position: relative;
+}
+#InlineFrame9
+{
+   border-width: 0;
+   position: absolute;
+   left: 0;
+   top: 0;
+   width: 100%;
+   height: 100%;
+}
+#wb_InlineFrame10
+{
+   box-sizing: border-box;
+   border: 1px solid transparent;
+   border-radius: 0px;
+   margin: 0;
+   overflow: auto;
+   -webkit-overflow-scrolling: touch;
+   position: relative;
+}
+#InlineFrame10
+{
+   border-width: 0;
+   position: absolute;
+   left: 0;
+   top: 0;
+   width: 100%;
+   height: 100%;
 }
