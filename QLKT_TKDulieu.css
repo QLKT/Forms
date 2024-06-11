@@ -734,7 +734,7 @@ body
    background-image: none;
    border: 0px solid #FFFFFF;
    border-radius: 0px;
-   width: 525px;
+   width: 500px;
    text-align: center;
 }
 #LayoutGrid8 > .row > .col-2
@@ -743,7 +743,7 @@ body
    background-image: none;
    border: 0px solid #FFFFFF;
    border-radius: 0px;
-   width:  calc((100% - 525px) / 1);
+   width: 450px;
    text-align: center;
 }
 #LayoutGrid8:before,
@@ -813,7 +813,7 @@ body
    background-image: none;
    border: 0px solid #FFFFFF;
    border-radius: 0px;
-   width: 550px;
+   width: 500px;
    text-align: left;
 }
 #LayoutGrid2 > .row > .col-2
@@ -822,7 +822,7 @@ body
    background-image: none;
    border: 0px solid #FFFFFF;
    border-radius: 0px;
-   width:  calc((100% - 550px) / 1);
+   width: 450px;
    text-align: left;
 }
 #LayoutGrid2:before,
@@ -901,7 +901,7 @@ body
    background-image: none;
    border: 0px solid #FFFFFF;
    border-radius: 0px;
-   width:  calc((100% - 500px) / 1);
+   width: 450px;
    text-align: center;
 }
 #LayoutGrid4:before,
@@ -936,7 +936,7 @@ body
    background-color: transparent;
    background-image: url('images/cosmic%2dbackground%2dwith%2ddark%2dlight%2dblue%2dlaser%2dlights%2dperfect%2ddigital%2dwallpaper_181624%2d23690.jpg');
    background-repeat: repeat;
-   background-position: center center;
+   background-position: left top;
    background-size: cover;
    border: 0px solid #CCCCCC;
    border-radius: 0px;
@@ -1167,7 +1167,7 @@ body
    background-image: none;
    border: 0px solid #FFFFFF;
    border-radius: 0px;
-   width: 100%;
+   width: 900px;
    text-align: center;
 }
 #LayoutGrid3:before,
@@ -1259,7 +1259,7 @@ body
    background-image: none;
    border: 0px solid #FFFFFF;
    border-radius: 0px;
-   width: 550px;
+   width: 500px;
    text-align: center;
 }
 #LayoutGrid9 > .row > .col-2
@@ -1268,7 +1268,7 @@ body
    background-image: none;
    border: 0px solid #FFFFFF;
    border-radius: 0px;
-   width:  calc((100% - 550px) / 1);
+   width: 450px;
    text-align: center;
 }
 #LayoutGrid9:before,
