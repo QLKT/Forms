@@ -27,4 +27,11 @@
          event.preventDefault();
          $('html, body').stop().animate({ scrollTop: $('#wb_Heading1').offset().top }, 600, 'linear');
       });
+      $("#Tabs1").tabs(
+      {
+         show: false,
+         hide: false,
+         event: 'click',
+         collapsible: false
+      });
    });
