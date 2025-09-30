@@ -9,6 +9,130 @@ body
    margin: 0;
    padding: 0;
 }
+.wb-theme-header
+{
+   background-color: #E9E9E9;
+   background-image: none;
+   border: 1px solid #DDDDDD;
+   border-radius: 0px;
+   color: #333333;
+   --background-color: rgba(233,233,233,1.00);
+   --border-color: #DDDDDD;
+   --border-width: 1px;
+   --color: #333333;
+}
+.wb-theme-content
+{
+   background-color: #FFFFFF;
+   background-image: none;
+   border: 1px solid #DDDDDD;
+   border-radius: 0px;
+   color: #333333;
+   --background-color: rgba(255,255,255,1.00);
+   --border-color: #DDDDDD;
+   --border-width: 1px;
+   --color: #333333;
+   --icon-color: #444444;
+   --colorize: invert(22%) sepia(0%) saturate(0%) hue-rotate(194deg) brightness(97%) contrast(81%);
+}
+.wb-theme-button, .wb-theme-static
+{
+   background-color: #F6F6F6;
+   background-image: none;
+   border: 1px solid #C5C5C5;
+   border-radius: 0px;
+   color: #454545;
+   --background-color: rgba(246,246,246,1.00);
+   --border-color: #C5C5C5;
+   --border-width: 1px;
+   --color: #454545;
+}
+.wb-theme-button:hover
+{
+   background-color: #EDEDED;
+   background-image: none;
+   border: 1px solid #CCCCCC;
+   border-radius: 0px;
+   color: #2B2B2B;
+   --background-color: rgba(237,237,237,1.00);
+   --border-color: #CCCCCC;
+   --border-width: 1px;
+   --color: #2B2B2B;
+}
+.wb-theme-button.active, .wb-theme-button:active, .active > .wb-theme-button
+{
+   background-color: #3370B7;
+   background-image: none;
+   border: 1px solid #2E6DA4;
+   border-radius: 0px;
+   color: #FFFFFF;
+   --background-color: rgba(51,112,183,1.00);
+   --border-color: #2E6DA4;
+   --border-width: 1px;
+   --color: #FFFFFF;
+}
+.darktheme .wb-theme-header
+{
+   background-color: #272B2F;
+   background-image: none;
+   border: 1px solid #424549;
+   border-radius: 0px;
+   color: #CCCCCC;
+   --background-color: rgba(39,43,47,1.00);
+   --border-color: #424549;
+   --border-width: 1px;
+   --color: #CCCCCC;
+}
+.darktheme .wb-theme-content
+{
+   background-color: #212529;
+   background-image: none;
+   border: 1px solid #495057;
+   border-radius: 0px;
+   color: #CCCCCC;
+   --background-color: rgba(33,37,41,1.00);
+   --border-color: #495057;
+   --border-width: 1px;
+   --color: #CCCCCC;
+   --icon-color: #3370B7;
+   --colorize: invert(39%) sepia(15%) saturate(3034%) hue-rotate(176deg) brightness(94%) contrast(84%);
+}
+.darktheme .wb-theme-button, .darktheme .wb-theme-static
+{
+   background-color: #090909;
+   background-image: none;
+   border: 1px solid #3A3A3A;
+   border-radius: 0px;
+   color: #BABABA;
+   --background-color: rgba(9,9,9,1.00);
+   --border-color: #3A3A3A;
+   --border-width: 1px;
+   --color: #BABABA;
+}
+.darktheme .wb-theme-button:hover
+{
+   background-color: #121212;
+   background-image: none;
+   border: 1px solid #333333;
+   border-radius: 0px;
+   color: #D4D4D4;
+   --background-color: rgba(18,18,18,1.00);
+   --border-color: #333333;
+   --border-width: 1px;
+   --color: #D4D4D4;
+}
+.darktheme .wb-theme-button.active, .darktheme .wb-theme-button:active, .active > .wb-theme-button
+{
+   background-color: #3370B7;
+   background-image: none;
+   border: 1px solid #2E6DA4;
+   border-radius: 0px;
+   color: #FFFFFF;
+   --background-color: rgba(51,112,183,1.00);
+   --border-color: #2E6DA4;
+   --border-width: 1px;
+   --color: #FFFFFF;
+}
 .DropdownMenu2 .nav
 {
    font-family: Arial;
@@ -838,8 +962,6 @@ body
 #wb_InlineFrame1
 {
    box-sizing: border-box;
-   border: 1px solid #DDDDDD;
-   border-radius: 0px;
    margin: 0;
    overflow: auto;
    -webkit-overflow-scrolling: touch;
