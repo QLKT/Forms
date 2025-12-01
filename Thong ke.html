@@ -462,7 +462,7 @@
               </div>
               <span class="mini-tag">Số lượng dự án theo tiến độ trong năm</span>
             </div>
-            anvas id="monthChart" height="140"></canvas>
+            <canvas id="monthChart" height="140"></canvas>
             <div class="card-footer">
               <div>
                 <span class="dot dot-blue"></span><span>Số lượng Dự án</span>
@@ -536,7 +536,7 @@
     const res = await fetch(url);
     const text = await res.text();
     // Cắt lấy đúng phần JSON trong response gviz [web:40]
-    const jsonText = text.substring(text.indexOf("{"), text.lastIndexOf("}") + 1);
+    const jsonText = text.substring(text.indexOf("{"), text.lastIndexOf("}")) + 1;
     return JSON.parse(jsonText);
   }
 
@@ -552,21 +552,57 @@
     });
   }
 
+  // ====== TIỆN ÍCH NGÀY/THÁNG/NĂM TỪ CÁC SHEET ======
+  function parseDateString(s) {
+    if (!s && s !== 0) return null;
+    const str = String(s).trim();
+    // dd/mm/yyyy or dd-mm-yyyy
+    let m = str.match(/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}$/);
+    if (m) return { day: Number(m[1]), month: Number(m[2]), year: Number(m[3]) };
+    // yyyy-mm-dd
+    m = str.match(/^\d{4}[\-]\d{1,2}[\-]\d{1,2}$/);
+    if (m) return { year: Number(m[1]), month: Number(m[2]), day: Number(m[3]) };
+    // mm/dd/yyyy
+    m = str.match(/^\d{1,2}[\/](\d{1,2})[\/](\d{4})$/);
+    if (m) return { month: Number(m[1]), day: Number(m[2]), year: Number(m[3]) };
+    // Try to parse as number (Google Sheets sometimes returns serial date numbers) - skip here
+    return null;
+  }
+
+  function getMonthFromRow(row) {
+    const keys = ["Ngày", "Ngay", "Date", "date", "ngay"];
+    for (const k of keys) {
+      if (row[k]) {
+        const d = parseDateString(row[k]);
+        if (d && d.month) return d.month;
+      }
+    }
+    return 0;
+  }
+
+  function getYearFromRow(row) {
+    // prefer explicit Year column
+    if (row["Year"] && Number(row["Year"])) return Number(row["Year"]);
+    const keys = ["Năm", "Year", "Ngày", "Ngay", "Date", "date", "ngay"];
+    for (const k of keys) {
+      if (row[k]) {
+        const d = parseDateString(row[k]);
+        if (d && d.year) return d.year;
+      }
+    }
+    return 0;
+  }
+
   // ====== NORMALIZE TỪNG SHEET ======
 
   // 1) Dự án: QLKT Data Sort
   function normalizeDuAn(row) {
-    const year  = Number(row["Năm"] || 0);
-    // Tách tháng từ cột "Ngày" dạng dd/mm/yyyy (nếu có)
-    let month = 0;
-    if (row["Ngày"]) {
-      const parts = row["Ngày"].toString().split("/");
-      if (parts.length >= 2) month = Number(parts[1]);
-    }
+    const year  = getYearFromRow(row) || 0;
+    const month = getMonthFromRow(row) || 0;
 
     return {
-      keyName: (row["Tên dự án"] || "").toString().trim(), // dùng làm khóa ghép với nghiệm thu
-      name: row["Tên dự án"] || "Chưa đặt tên",
+      keyName: (row["Tên dự án"] || row["Tên Hợp đồng"] || "").toString().trim(), // dùng làm khóa ghép với nghiệm thu
+      name: row["Tên dự án"] || row["Tên Hợp đồng"] || "Chưa đặt tên",
       unit: row["Đơn vị thực hiện"] || "",
       leader: row["Chủ nhiệm"] || "",
       staff: row["Chuyên viên phụ trách"] || "",
@@ -575,31 +611,27 @@
       // mặc định, sẽ được cập nhật từ sheet nghiệm thu
       status: "dang-thuc-hien",
       progress: 0,
-      type: "Dự án"   // hiện chưa có cột loại, gán mặc định; sau bạn có thể thêm cột "Loại dự án"
+      type: row["Loại"] || row["Loại dự án"] || "Dự án"   // cố gắng lấy cột Loại nếu có
     };
   }
 
   // 2) Nghiệm thu nội bộ: QLKT Nghiệm thu nội bộ Sort
   function normalizeNghiemThu(row) {
-    const year  = Number(row["Year"] || 0);
-    let month = 0;
-    if (row["Ngày"]) {
-      const parts = row["Ngày"].toString().split("/");
-      if (parts.length >= 2) month = Number(parts[1]);
-    }
+    const yearFromRow = getYearFromRow(row) || 0;
+    const month = getMonthFromRow(row) || 0;
 
-    const statusRaw = (row["Tình hình thực hiện"] || "").toString().toLowerCase();
+    const statusRaw = (row["Tình hình thực hiện"] || row["Tình trạng"] || "").toString().toLowerCase();
     let statusKey = "dang-thuc-hien";
     if (statusRaw.includes("nghiệm") || statusRaw.includes("nghiem")) statusKey = "nghiem-thu";
     else if (statusRaw.includes("trình") || statusRaw.includes("trinh")) statusKey = "trinh-ky";
     else if (statusRaw.includes("trễ") || statusRaw.includes("tre") || statusRaw.includes("chậm")) statusKey = "tre-han";
 
-    const progressRaw = row["Đánh giá tỉ lệ hoàn thành công việc"] || 0;
+    const progressRaw = row["Đánh giá tỉ lệ hoàn thành công việc"] || row["Tỉ lệ hoàn thành"] || row["Progress"] || 0;
     const progress = Number(progressRaw);
 
     return {
-      contractName: (row["Tên Hợp đồng"] || "").toString().trim(), // ghép với Tên dự án
-      year: isNaN(year) ? 0 : year,
+      contractName: (row["Tên Hợp đồng"] || row["Tên dự án"] || "").toString().trim(), // ghép với Tên dự án
+      year: isNaN(yearFromRow) ? 0 : yearFromRow,
       month: isNaN(month) ? 0 : month,
       status: statusKey,
       progress: isNaN(progress) ? 0 : progress
@@ -608,7 +640,7 @@
 
   // 3) Trình ký: QLKT Trình ký Sort (chỉ để mở rộng KPI nếu cần)
   function normalizeTrinhKy(row) {
-    const year  = Number(row["Year"] || 0);
+    const year  = getYearFromRow(row) || 0;
     return {
       year: isNaN(year) ? 0 : year,
       author: row["Nhân viên soạn thảo văn bản"] || "",
@@ -836,7 +868,7 @@
         <div>
           <div>${p.name}</div>
           <div style="font-size:11px;color:var(--muted);margin-top:2px;">
-            ${p.type} • ${p.year || ""}-${String(p.month || "").padStart(2, "0")}
+            ${p.type || ''} ${p.year ? ("• " + p.year + (p.month ? ('-' + String(p.month).padStart(2,'0')) : '')) : ''}
           </div>
         </div>
         <div>${p.unit}</div>
@@ -928,7 +960,3 @@
 </script>
 </body>
 </html>
-
-
-
-
