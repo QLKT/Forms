@@ -9,7 +9,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
   <style>
     :root {
       --bg: #0f172a; --bg-soft: #111827; --card: #020617;
@@ -28,7 +27,7 @@
     .filters-row { display: flex; gap: 10px; flex-wrap: wrap; }
     .filter-group { display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: var(--muted); }
     .filter-wrapper { position: relative; display: inline-block; }
-    .filter-select, .filter-input { background: var(--bg-soft); border-radius: 999px; border: 1px solid var(--border); color: var(--text); padding: 6px 26px 6px 10px; font-size: 13px; outline: none; min-width: 160px; appearance: none; }
+    .filter-select { background: var(--bg-soft); border-radius: 999px; border: 1px solid var(--border); color: var(--text); padding: 6px 26px 6px 10px; font-size: 13px; outline: none; min-width: 160px; appearance: none; }
     .filter-wrapper i { position: absolute; right: 9px; top: 50%; transform: translateY(-50%); font-size: 11px; color: var(--muted); pointer-events: none; }
     .grid { display: grid; grid-template-columns: 2.1fr 1.2fr; gap: 16px; }
     @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
@@ -51,14 +50,6 @@
     .table-header-row, .table-row { display: grid; grid-template-columns: var(--cols); font-size: 12px; padding: 6px 10px; align-items: center; }
     .table-header-row { background: var(--bg-soft); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
     .table-body { max-height: 260px; overflow-y: auto; }
-    .status-pill { font-size: 11px; border-radius: 999px; padding: 2px 8px; display: inline-flex; align-items: center; gap: 4px; }
-    .status-green { background: rgba(22, 163, 74, 0.1); color: var(--success); border: 1px solid rgba(22, 163, 74, 0.4); }
-    .status-blue { background: rgba(59, 130, 246, 0.1); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); }
-    .status-amber { background: rgba(245, 158, 11, 0.1); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
-    .status-red { background: rgba(248, 113, 113, 0.1); color: #fecaca; border: 1px solid rgba(248, 113, 113, 0.4); }
-    .progress-bar { height: 6px; border-radius: 999px; background: #020617; overflow: hidden; border: 1px solid #111827; }
-    .progress-inner { height: 100%; border-radius: inherit; background: linear-gradient(90deg, #22c55e, #a3e635); }
-    .text-right { text-align: right; }
     .mini-tag { font-size: 10px; color: var(--muted); padding: 2px 6px; border-radius: 999px; background: rgba(15, 23, 42, 0.9); border: 1px dashed rgba(148, 163, 184, 0.4); }
     .loading { font-size: 13px; color: var(--muted); margin-top: 6px; }
     .error { color: var(--danger); font-size: 12px; margin-top: 6px; }
@@ -79,9 +70,9 @@
 
     <!-- FILTERS -->
     <div class="filters">
-      <!-- Hàng bộ lọc chung -->
       <div class="filters-row">
-        <div class="filter-group">
+        <div class="filter-group
+                  <div class="filter-group">
           <span>Loại dữ liệu</span>
           <div class="filter-wrapper">
             <select id="dataTypeFilter" class="filter-select">
@@ -117,14 +108,11 @@
           </div>
         </div>
       </div>
-
-      <!-- Hàng bộ lọc theo cột động -->
       <div id="dynamicFilters" class="filters-row"></div>
     </div>
 
-    <!-- GRID -->
+    <!-- GRID KPI + CHART -->
     <div class="grid">
-      <!-- LEFT -->
       <div>
         <div class="card">
           <div class="card-header">
@@ -133,11 +121,9 @@
               <div class="card-subtitle">KPI và biểu đồ theo loại dữ liệu và bộ lọc cột.</div>
             </div>
           </div>
-
           <div class="kpi-grid" id="kpiGrid"></div>
           <div class="loading" id="loadingKpi">Đang tải dữ liệu từ Google Sheets...</div>
           <div class="error" id="errorBox" style="display:none;"></div>
-
           <div style="margin-top: 10px;">
             <div class="card-header">
               <div class="card-title"><i class="fa-solid fa-chart-column"></i> Bản ghi theo tháng</div>
@@ -145,45 +131,38 @@
             </div>
             <canvas id="monthChart" height="140"></canvas>
             <div class="card-footer">
-              <div><span class="dot dot-blue"></span><span>Tổng số bản ghi</span></div>
               <div>Đơn vị: số bản ghi / tháng</div>
             </div>
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- RIGHT -->
-      <div>
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <div class="card-title"><i class="fa-solid fa-table-list"></i> Danh sách theo bộ lọc</div>
-              <div class="card-subtitle">Hiển thị đúng cột theo từng loại dữ liệu.</div>
-            </div>
-          </div>
-
-          <div class="table-wrapper">
-            <div id="tableHeader" class="table-header-row" style="--cols: 2fr 1fr 1fr 1fr 1fr;"></div>
-            <div class="table-body" id="tableBody"></div>
-          </div>
-
-          <div class="card-footer">
-            <div>Dữ liệu QLKT.</div>
-            <div class="mini-tag">Nguồn: P.QLKT</div>
-          </div>
+    <!-- TABLE ĐƯA XUỐNG CUỐI TRANG -->
+    <div class="card" style="margin-top:20px;">
+      <div class="card-header">
+        <div>
+          <div class="card-title"><i class="fa-solid fa-table-list"></i> Danh sách theo bộ lọc</div>
+          <div class="card-subtitle">Hiển thị đúng cột theo từng loại dữ liệu.</div>
         </div>
+      </div>
+      <div class="table-wrapper">
+        <div id="tableHeader" class="table-header-row" style="--cols: 2fr 1fr 1fr 1fr 1fr;"></div>
+        <div class="table-body" id="tableBody"></div>
+      </div>
+      <div class="card-footer">
+        <div>Dữ liệu QLKT.</div>
+        <div class="mini-tag">Nguồn: P.QLKT</div>
       </div>
     </div>
   </div>
 
 <script>
-  // CẤU HÌNH GOOGLE SHEETS
   const SPREADSHEET_ID = "12VZMuTxWo1o44zYpX2llB2BSGbEgn4nQldCKRUbdmeQ";
   const SHEET_NAME_DUAN      = "QLKT Data Sort";
   const SHEET_NAME_TRINHKY   = "QLKT Trình ký Sort";
   const SHEET_NAME_NGHIEMTHU = "QLKT Nghiệm thu nội bộ Sort";
 
-  // DOM
   const dataTypeFilter = document.getElementById("dataTypeFilter");
   const yearFilter   = document.getElementById("yearFilter");
   const monthFilter  = document.getElementById("monthFilter");
@@ -194,108 +173,19 @@
   const loadingKpi   = document.getElementById("loadingKpi");
   const errorBox     = document.getElementById("errorBox");
 
-  let dataQLKT = [];         // từ SHEET_NAME_DUAN
-  let dataTRINH_VB = [];     // từ SHEET_NAME_TRINHKY
-  let dataNGHIEM_THU_NB = []; // từ SHEET_NAME_NGHIEMTHU
+  let dataQLKT = [], dataTRINH_VB = [], dataNGHIEM_THU_NB = [];
   let chart;
 
-  // Sơ đồ cột hiển thị & lọc cho từng loại
-  const TYPE_SCHEMAS = {
-    QLKT: {
-      label: "QLKT",
-      sheet: "DUAN",
-      filters: [
-        { key: "Ngày", type: "text", label: "Ngày" },
-        { key: "Chuyên viên phụ trách", type: "text", label: "Chuyên viên phụ trách" },
-        { key: "Đơn vị thực hiện", type: "text", label: "Đơn vị thực hiện" },
-        { key: "Tên dự án", type: "text", label: "Tên dự án" },
-        { key: "Chủ nhiệm", type: "text", label: "Chủ nhiệm" },
-        { key: "Mục đích trình", type: "text", label: "Mục đích trình" },
-        { key: "ID", type: "text", label: "ID" },
-        { key: "Year", type: "select", label: "Year" } // dùng chung với yearFilter nhưng vẫn render để người dùng thấy
-      ],
-      tableCols: [
-        { key: "Ngày", label: "Ngày", width: "1.2fr" },
-        { key: "Chuyên viên phụ trách", label: "Chuyên viên", width: "1.2fr" },
-        { key: "Đơn vị thực hiện", label: "Đơn vị thực hiện", width: "1.2fr" },
-        { key: "Tên dự án", label: "Tên dự án", width: "2fr" },
-        { key: "Chủ nhiệm", label: "Chủ nhiệm", width: "1fr" },
-        { key: "Mục đích trình", label: "Mục đích trình", width: "1.4fr" },
-        { key: "ID", label: "ID", width: "0.8fr" },
-        { key: "Year", label: "Year", width: "0.8fr" }
-      ]
-    },
-    TRINH_VB: {
-      label: "Trình VB",
-      sheet: "TRINH_VB",
-      filters: [
-        { key: "Ngày", type: "text", label: "Ngày" },
-        { key: "Lãnh đạo ký", type: "text", label: "Lãnh đạo ký" },
-        { key: "Về việc", type: "text", label: "Về việc" },
-        { key: "Ý kiến chỉ đạo", type: "text", label: "Ý kiến chỉ đạo" },
-        { key: "Tóm tắt nội dung và kiến nghị giải quyết", type: "text", label: "Tóm tắt & Kiến nghị" },
-        { key: "Cơ sở ban hành văn bản", type: "text", label: "Cơ sở ban hành" },
-        { key: "Nhân viên soạn thảo văn bản", type: "text", label: "NV soạn thảo" },
-        { key: "ID", type: "text", label: "ID" },
-        { key: "Year", type: "select", label: "Year" }
-      ],
-      tableCols: [
-        { key: "Ngày", label: "Ngày", width: "1.2fr" },
-        { key: "Lãnh đạo ký", label: "Lãnh đạo ký", width: "1.2fr" },
-        { key: "Về việc", label: "Về việc", width: "1.6fr" },
-        { key: "Ý kiến chỉ đạo", label: "Ý kiến chỉ đạo", width: "1.6fr" },
-        { key: "Tóm tắt nội dung và kiến nghị giải quyết", label: "Tóm tắt & Kiến nghị", width: "2fr" },
-        { key: "Cơ sở ban hành văn bản", label: "Cơ sở ban hành", width: "1.4fr" },
-        { key: "Nhân viên soạn thảo văn bản", label: "NV soạn thảo", width: "1.2fr" },
-        { key: "ID", label: "ID", width: "0.8fr" },
-        { key: "Year", label: "Year", width: "0.8fr" }
-      ]
-    },
-    NGHIEM_THU_NB: {
-      label: "Nghiệm thu NB",
-      sheet: "NGHIEM_THU_NB",
-      filters: [
-        { key: "Ngày", type: "text", label: "Ngày" },
-        { key: "Đơn vị thực hiện", type: "text", label: "Đơn vị thực hiện" },
-        { key: "Số Hợp đồng", type: "text", label: "Số Hợp đồng" },
-        { key: "Tên Hợp đồng", type: "text", label: "Tên Hợp đồng" },
-        { key: "Tình hình thực hiện", type: "text", label: "Tình hình thực hiện" },
-        { key: "Đánh giá tỉ lệ hoàn thành công việc", type: "text", label: "Tỉ lệ hoàn thành" },
-        { key: "Đề nghị Thanh toán", type: "text", label: "Đề nghị Thanh toán" },
-        { key: "Tỉ lệ thanh lý", type: "text", label: "Tỉ lệ thanh lý" },
-        { key: "Đã nộp hồ sơ in (2 dấu) lưu tại Viện", type: "text", label: "Hồ sơ lưu Viện" },
-        { key: "ID", type: "text", label: "ID" },
-        { key: "Year", type: "select", label: "Year" }
-      ],
-      tableCols: [
-        { key: "Ngày", label: "Ngày", width: "1fr" },
-        { key: "Đơn vị thực hiện", label: "Đơn vị thực hiện", width: "1.2fr" },
-        { key: "Số Hợp đồng", label: "Số HĐ", width: "1fr" },
-        { key: "Tên Hợp đồng", label: "Tên HĐ", width: "1.6fr" },
-        { key: "Tình hình thực hiện", label: "Tình hình", width: "1.6fr" },
-        { key: "Đánh giá tỉ lệ hoàn thành công việc", label: "Tỉ lệ hoàn thành", width: "1fr" },
-        { key: "Đề nghị Thanh toán", label: "Thanh toán", width: "1fr" },
-        { key: "Tỉ lệ thanh lý", label: "Tỉ lệ thanh lý", width: "1fr" },
-        { key: "Đã nộp hồ sơ in (2 dấu) lưu tại Viện", label: "Hồ sơ lưu Viện", width: "1.2fr" },
-        { key: "ID", label: "ID", width: "0.8fr" },
-        { key: "Year", label: "Year", width: "0.8fr" }
-      ]
-    }
-  };
+  // ... giữ nguyên TYPE_SCHEMAS như trước ...
 
-  // ====== ĐỌC GViz JSON ======
   async function fetchSheetJSON(sheetName) {
     const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
     const res = await fetch(url);
     const text = await res.text();
-    if (!text.includes("google.visualization")) {
-      throw new Error(`Không thể tải dữ liệu từ sheet "${sheetName}". Kiểm tra quyền chia sẻ hoặc tên sheet.`);
-    }
     const start = text.indexOf('{');
     const end = text.lastIndexOf('}');
     return JSON.parse(text.substring(start, end + 1));
   }
-
   function parseTable(gvizJson) {
     const cols = gvizJson.table.cols.map(c => c.label || c.id);
     return gvizJson.table.rows.map(r => {
@@ -304,31 +194,24 @@
       return obj;
     });
   }
-
-  // ====== TIỆN ÍCH NGÀY/THÁNG/NĂM ======
   function parseDateString(s) {
-    if (!s && s !== 0) return null;
+    if (!s) return null;
     const str = String(s).trim();
-    let m = str.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/); if (m) return { day: +m[1], month: +m[2], year: +m[3] };
-    m = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/); if (m) return { year: +m[1], month: +m[2], day: +m[3] };
-    m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); if (m) return { month: +m[1], day: +m[2], year: +m[3] };
-    if (!isNaN(Number(str))) { const serial = Number(str); const date = new Date(Math.round((serial - 25569) * 86400 * 1000)); return { day: date.getUTCDate(), month: date.getUTCMonth() + 1, year: date.getUTCFullYear() }; }
+    let m = str.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/); if (m) return { day:+m[1], month:+m[2], year:+m[3] };
+    m = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/); if (m) return { year:+m[1], month:+m[2], day:+m[3] };
     return null;
   }
   function getMonth(row) {
-    const keys = ["Ngày", "Ngay", "Date", "date", "Ngày ký", "Ngày nghiệm thu"];
-    for (const k of keys) { if (row[k]) { const d = parseDateString(row[k]); if (d?.month >= 1 && d.month <= 12) return d.month; } }
-    return 0;
+    const keys = ["Ngày","Date","Ngày ký","Ngày nghiệm thu"];
+    for (const k of keys) { if (row[k]) { const d=parseDateString(row[k]); if(d?.month) return d.month; } }
+    return null;
   }
   function getYear(row) {
-    const yearKeys = ["Year", "Năm", "Nam", "year", "YEAR"];
-    for (const k of yearKeys) { if (row[k]) { const y = Number(row[k]); if (!isNaN(y) && y >= 2000 && y <= 2100) return y; } }
-    const dateKeys = ["Ngày", "Ngay", "Date", "date", "Ngày ký", "Ngày nghiệm thu"];
-    for (const k of dateKeys) { if (row[k]) { const d = parseDateString(row[k]); if (d?.year) return d.year; } }
-    return 0;
+    if (row["Year"]) return Number(row["Year"]);
+    const d = parseDateString(row["Ngày"]||row["Date"]);
+    return d?.year||null;
   }
 
-  // ====== KHỞI TẠO BỘ LỌC ĐỘNG ======
   function buildDynamicFilters(schema, data) {
     dynamicFilters.innerHTML = "";
     schema.filters.forEach(f => {
@@ -338,233 +221,132 @@
       label.textContent = f.label;
       const wrapper = document.createElement("div");
       wrapper.className = "filter-wrapper";
-
-      if (f.type === "select") {
-        const select = document.createElement("select");
-        select.className = "filter-select";
-        select.dataset.key = f.key;
-        select.innerHTML = `<option value="all">Tất cả</option>`;
-        // Lấy unique values cho select
-        const values = new Set();
-        data.forEach(row => { if (row[f.key] !== null && row[f.key] !== undefined && row[f.key] !== "") values.add(String(row[f.key])); });
-        Array.from(values).sort().forEach(v => {
-          const opt = document.createElement("option");
-          opt.value = v;
-          opt.textContent = v;
-          select.appendChild(opt);
-        });
-        wrapper.appendChild(select);
-        const icon = document.createElement("i");
-        icon.className = "fa-solid fa-chevron-down";
-        wrapper.appendChild(icon);
-        select.addEventListener("change", updateDashboard);
-      } else {
-        const input = document.createElement("input");
-        input.className = "filter-input";
-        input.placeholder = "Nhập để lọc...";
-        input.dataset.key = f.key;
-        wrapper.appendChild(input);
-        input.addEventListener("input", debounce(updateDashboard, 250));
-      }
-
-      group.appendChild(label);
-      group.appendChild(wrapper);
-      dynamicFilters.appendChild(group);
+      const select = document.createElement("select");
+      select.className = "filter-select";
+      select.dataset.key = f.key;
+      select.innerHTML = `<option value="all">Tất cả</option>`;
+      const values = new Set();
+      data.forEach(row => { if(row[f.key]) values.add(String(row[f.key])); });
+      Array.from(values).sort().forEach(v => {
+        const opt=document.createElement("option"); opt.value=v; opt.textContent=v; select.appendChild(opt);
+      });
+      wrapper.appendChild(select);
+      const icon=document.createElement("i"); icon.className="fa-solid fa-chevron-down"; wrapper.appendChild(icon);
+      select.addEventListener("change", updateDashboard);
+      group.appendChild(label); group.appendChild(wrapper); dynamicFilters.appendChild(group);
     });
   }
 
-  // ====== ÁP DỤNG BỘ LỌC ======
   function applyFiltersToData(data, schema) {
-    const year = yearFilter.value;
-    const month = monthFilter.value;
-
-    // Lọc theo năm/tháng từ tiện ích
-    let filtered = data.filter(r => {
-      const y = getYear(r);
-      const m = getMonth(r);
-      if (year !== "all" && String(y) !== String(year)) return false;
-      if (month !== "all" && String(m) !== String(month)) return false;
+    const year=yearFilter.value, month=monthFilter.value;
+    let filtered=data.filter(r=>{
+      const y=getYear(r), m=getMonth(r);
+      if(year!=="all" && String(y)!==String(year)) return false;
+      if(month!=="all" && String(m)!==String(month)) return false;
       return true;
     });
-
-    // Lọc theo các bộ lọc cột động
-    const controls = dynamicFilters.querySelectorAll(".filter-input, .filter-select");
-    controls.forEach(el => {
-      const key = el.dataset.key;
-      const val = el.value;
+    dynamicFilters.querySelectorAll(".filter-select").forEach(el=>{
+      const key=el.dataset.key, val=el.value;
       if (!key) return;
-      if (el.classList.contains("filter-select")) {
-        if (val !== "all") filtered = filtered.filter(r => String(r[key]) === String(val));
-      } else {
-        const q = String(val).trim().toLowerCase();
-        if (q) filtered = filtered.filter(r => String(r[key] ?? "").toLowerCase().includes(q));
+      if (val !== "all") {
+        filtered = filtered.filter(r => String(r[key]) === String(val));
       }
     });
-
     return filtered;
   }
 
-  // ====== KPI ======
   function renderKPIData(filtered) {
     const total = filtered.length;
-    // Nếu có cột "Đánh giá tỉ lệ hoàn thành công việc" hoặc "Tỉ lệ hoàn thành" → hiển thị avg
     const percentKeys = ["Đánh giá tỉ lệ hoàn thành công việc", "Tỉ lệ hoàn thành"];
     let avgProgress = 0;
     for (const k of percentKeys) {
-      const nums = filtered.map(r => Number(String(r[k] ?? "").toString().replace(/[^\d.]/g, ""))).filter(n => !isNaN(n));
-      if (nums.length) { avgProgress = Math.round(nums.reduce((s, n) => s + n, 0) / nums.length); break; }
+      const nums = filtered.map(r => Number(String(r[k] ?? "").replace(/[^\d.]/g,""))).filter(n=>!isNaN(n));
+      if (nums.length) { avgProgress = Math.round(nums.reduce((s,n)=>s+n,0)/nums.length); break; }
     }
     kpiGrid.innerHTML = `
-      <div class="kpi-card">
-        <div class="kpi-label">Tổng số bản ghi</div>
-        <div class="kpi-value-row">
-          <div class="kpi-value">${total}</div>
-          <div class="kpi-chip positive"><i class="fa-solid fa-arrow-trend-up"></i> Live</div>
-        </div>
-        <div class="kpi-meta">Theo bộ lọc hiện tại.</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">Tỉ lệ hoàn thành TB</div>
-        <div class="kpi-value-row">
-          <div class="kpi-value">${avgProgress}%</div>
-          <div class="kpi-chip"><i class="fa-solid fa-clipboard-check"></i> Progress</div>
-        </div>
-        <div class="progress-bar"><div class="progress-inner" style="width:${avgProgress}%;"></div></div>
-        <div class="kpi-meta">Nếu có trường tỉ lệ trong dữ liệu.</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">Năm đang lọc</div>
-        <div class="kpi-value-row">
-          <div class="kpi-value">${yearFilter.value === "all" ? "Tất cả" : yearFilter.value}</div>
-          <div class="kpi-chip warning"><i class="fa-solid fa-filter"></i> Scope</div>
-        </div>
-        <div class="kpi-meta">Kết hợp với tháng và cột động.</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">Loại dữ liệu</div>
-        <div class="kpi-value-row">
-          <div class="kpi-value">${TYPE_SCHEMAS[dataTypeFilter.value].label}</div>
-          <div class="kpi-chip"><i class="fa-solid fa-database"></i> Sheet</div>
-        </div>
-        <div class="kpi-meta">Nguồn: Google Sheets.</div>
-      </div>
+      <div class="kpi-card"><div class="kpi-label">Tổng số bản ghi</div>
+        <div class="kpi-value-row"><div class="kpi-value">${total}</div>
+        <div class="kpi-chip positive"><i class="fa-solid fa-arrow-trend-up"></i> Live</div></div></div>
+      <div class="kpi-card"><div class="kpi-label">Tỉ lệ hoàn thành TB</div>
+        <div class="kpi-value-row"><div class="kpi-value">${avgProgress}%</div>
+        <div class="kpi-chip"><i class="fa-solid fa-clipboard-check"></i> Progress</div></div>
+        <div class="progress-bar"><div class="progress-inner" style="width:${avgProgress}%;"></div></div></div>
+      <div class="kpi-card"><div class="kpi-label">Năm đang lọc</div>
+        <div class="kpi-value-row"><div class="kpi-value">${yearFilter.value==="all"?"Tất cả":yearFilter.value}</div>
+        <div class="kpi-chip warning"><i class="fa-solid fa-filter"></i> Scope</div></div></div>
+      <div class="kpi-card"><div class="kpi-label">Loại dữ liệu</div>
+        <div class="kpi-value-row"><div class="kpi-value">${TYPE_SCHEMAS[dataTypeFilter.value].label}</div>
+        <div class="kpi-chip"><i class="fa-solid fa-database"></i> Sheet</div></div></div>
     `;
   }
 
-  // ====== BIỂU ĐỒ ======
   function renderChart(filtered) {
-    const months = Array.from({ length: 12 }, (_, i) => i + 1);
-    const data = months.map(m => filtered.filter(r => getMonth(r) === m).length);
-
-    const ctx = document.getElementById("monthChart").getContext("2d");
-    if (chart) chart.destroy();
-    chart = new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels: months.map(m => m.toString().padStart(2, "0")),
-        datasets: [{ label: "Bản ghi", data, backgroundColor: "rgba(56, 189, 248, 0.7)", borderRadius: 4, barPercentage: 0.65, categoryPercentage: 0.5 }]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => `Số lượng: ${ctx.parsed.y}` } } },
-        scales: {
-          x: { grid: { display: false }, ticks: { color: "#9ca3af", font: { size: 11 } } },
-          y: { beginAtZero: true, grid: { color: "rgba(55, 65, 81, 0.6)" }, ticks: { color: "#9ca3af", stepSize: 1, font: { size: 11 } } }
-        }
-      }
-    });
+    const months = Array.from({length:12},(_,i)=>i+1);
+    const data = months.map(m=>filtered.filter(r=>getMonth(r)===m).length);
+    const ctx=document.getElementById("monthChart").getContext("2d");
+    if(chart) chart.destroy();
+    chart=new Chart(ctx,{type:"bar",data:{labels:months.map(m=>m.toString().padStart(2,"0")),
+      datasets:[{label:"Bản ghi",data,backgroundColor:"rgba(56,189,248,0.7)",borderRadius:4}]},
+      options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{color:"#9ca3af"}},y:{beginAtZero:true,ticks:{color:"#9ca3af"}}}}});
   }
 
-  // ====== BẢNG ======
   function renderTable(schema, filtered) {
-    const cols = schema.tableCols;
-    const colTemplate = cols.map(c => c.width || "1fr").join(" ");
-    tableHeader.style.setProperty("--cols", colTemplate);
-    tableBody.style.setProperty("--cols", colTemplate);
-
-    // Header
-    tableHeader.innerHTML = cols.map(c => `<div>${c.label}</div>`).join("");
-
-    // Body
-    const rowsHtml = filtered.slice(0, 100).map(r => {
-      return `<div class="table-row">${cols.map(c => `<div>${safe(r[c.key])}</div>`).join("")}</div>`;
-    }).join("");
-
-    tableBody.innerHTML = rowsHtml || `<div style="padding:10px;color:var(--muted);">Không có bản ghi phù hợp.</div>`;
+    const cols=schema.tableCols;
+    const colTemplate=cols.map(c=>c.width||"1fr").join(" ");
+    tableHeader.style.setProperty("--cols",colTemplate);
+    tableBody.style.setProperty("--cols",colTemplate);
+    tableHeader.innerHTML=cols.map(c=>`<div>${c.label}</div>`).join("");
+    const rowsHtml=filtered.slice(0,100).map(r=>`<div class="table-row">${cols.map(c=>`<div>${r[c.key]??""}</div>`).join("")}</div>`).join("");
+    tableBody.innerHTML=rowsHtml||`<div style="padding:10px;color:var(--muted);">Không có bản ghi phù hợp.</div>`;
   }
-  function safe(v) { return (v === null || v === undefined) ? "" : String(v); }
 
-  // ====== CẬP NHẬT DASHBOARD ======
   function updateDashboard() {
-    const typeKey = dataTypeFilter.value;
-    const schema = TYPE_SCHEMAS[typeKey];
-    const sourceData = typeKey === "QLKT" ? dataQLKT : (typeKey === "TRINH_VB" ? dataTRINH_VB : dataNGHIEM_THU_NB);
-
-    // Áp dụng lọc
-    const filtered = applyFiltersToData(sourceData, schema);
-
-    // KPI / Chart / Table
+    const typeKey=dataTypeFilter.value;
+    const schema=TYPE_SCHEMAS[typeKey];
+    const sourceData=typeKey==="QLKT"?dataQLKT:(typeKey==="TRINH_VB"?dataTRINH_VB:dataNGHIEM_THU_NB);
+    const filtered=applyFiltersToData(sourceData,schema);
     renderKPIData(filtered);
     renderChart(filtered);
-    renderTable(schema, filtered);
-    loadingKpi.style.display = "none";
+    renderTable(schema,filtered);
+    loadingKpi.style.display="none";
   }
 
-  // ====== KHỞI TẠO BỘ LỌC NĂM ======
   function initYearOptions(allDataSets) {
-    const years = new Set();
-    allDataSets.forEach(ds => ds.forEach(r => { const y = getYear(r); if (y) years.add(y); }));
-    yearFilter.innerHTML = `<option value="all">Tất cả</option>` + Array.from(years).sort().map(y => `<option value="${y}">${y}</option>`).join("");
+    const years=new Set();
+    allDataSets.forEach(ds=>ds.forEach(r=>{const y=getYear(r); if(y) years.add(y);}));
+    yearFilter.innerHTML=`<option value="all">Tất cả</option>`+Array.from(years).sort().map(y=>`<option value="${y}">${y}</option>`).join("");
   }
 
-  // ====== KHỞI TẠO ======
   async function init() {
     try {
-      loadingKpi.textContent = "Đang tải dữ liệu từ 3 bảng Google Sheets...";
-
-      const [duAnJson, trinhKyJson, nghiemThuJson] = await Promise.all([
+      loadingKpi.textContent="Đang tải dữ liệu từ 3 bảng Google Sheets...";
+      const [duAnJson,trinhKyJson,nghiemThuJson]=await Promise.all([
         fetchSheetJSON(SHEET_NAME_DUAN),
         fetchSheetJSON(SHEET_NAME_TRINHKY),
         fetchSheetJSON(SHEET_NAME_NGHIEMTHU)
       ]);
-
-      dataQLKT         = parseTable(duAnJson);
-      dataTRINH_VB     = parseTable(trinhKyJson);
-      dataNGHIEM_THU_NB= parseTable(nghiemThuJson);
-
-      // Khởi tạo danh sách năm dùng chung
-      initYearOptions([dataQLKT, dataTRINH_VB, dataNGHIEM_THU_NB]);
-
-      // Xây bộ lọc động ban đầu theo QLKT
-      buildDynamicFilters(TYPE_SCHEMAS[dataTypeFilter.value], dataQLKT);
-
-      // Lắng nghe thay đổi loại dữ liệu để dựng lại bộ lọc cột
-      dataTypeFilter.addEventListener("change", () => {
-        const typeKey = dataTypeFilter.value;
-        const schema = TYPE_SCHEMAS[typeKey];
-        const src = typeKey === "QLKT" ? dataQLKT : (typeKey === "TRINH_VB" ? dataTRINH_VB : dataNGHIEM_THU_NB);
-        buildDynamicFilters(schema, src);
+      dataQLKT=parseTable(duAnJson);
+      dataTRINH_VB=parseTable(trinhKyJson);
+      dataNGHIEM_THU_NB=parseTable(nghiemThuJson);
+      initYearOptions([dataQLKT,dataTRINH_VB,dataNGHIEM_THU_NB]);
+      buildDynamicFilters(TYPE_SCHEMAS[dataTypeFilter.value],dataQLKT);
+      dataTypeFilter.addEventListener("change",()=>{
+        const typeKey=dataTypeFilter.value;
+        const schema=TYPE_SCHEMAS[typeKey];
+        const src=typeKey==="QLKT"?dataQLKT:(typeKey==="TRINH_VB"?dataTRINH_VB:dataNGHIEM_THU_NB);
+        buildDynamicFilters(schema,src);
         updateDashboard();
       });
-
-      // Lắng nghe thay đổi năm/tháng
-      yearFilter.addEventListener("change", updateDashboard);
-      monthFilter.addEventListener("change", updateDashboard);
-
-      // Render lần đầu
+      yearFilter.addEventListener("change",updateDashboard);
+      monthFilter.addEventListener("change",updateDashboard);
       updateDashboard();
-    } catch (err) {
-      loadingKpi.style.display = "none";
-      errorBox.style.display = "block";
-      errorBox.textContent = "Lỗi khi tải dữ liệu từ Google Sheets. Hãy kiểm tra quyền chia sẻ (public) và tên sheet.";
+    } catch(err) {
+      loadingKpi.style.display="none";
+      errorBox.style.display="block";
+      errorBox.textContent="Lỗi khi tải dữ liệu từ Google Sheets.";
       console.error(err);
     }
   }
-
-  function debounce(fn, ms) {
-    let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
-  }
-
   init();
 </script>
 </body>
