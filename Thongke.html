@@ -81,6 +81,7 @@
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
+      margin-bottom: 10px;
     }
 
     .filter-group {
@@ -384,52 +385,55 @@
           <span>Thống kê dữ liệu các dự án, văn bản trình ký, nghiệm thu nội bộ.</span>
         </div>
       </div>
-      <div class="filters">
-        <div class="filter-group">
-          <span>Năm</span>
-          <div class="filter-wrapper">
-            <select id="yearFilter" class="filter-select">
-              <option value="all">Tất cả</option>
-            </select>
-            <i class="fa-solid fa-chevron-down"></i>
-          </div>
+      <span class="pill">QLKT DASHBOARD</span>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="filters">
+      <div class="filter-group">
+        <span>Năm</span>
+        <div class="filter-wrapper">
+          <select id="yearFilter" class="filter-select">
+            <option value="all">Tất cả</option>
+          </select>
+          <i class="fa-solid fa-chevron-down"></i>
         </div>
-        <div class="filter-group">
-          <span>Tháng</span>
-          <div class="filter-wrapper">
-            <select id="monthFilter" class="filter-select">
-              <option value="all">Cả năm</option>
-              <option value="1">01</option><option value="2">02</option>
-              <option value="3">03</option><option value="4">04</option>
-              <option value="5">05</option><option value="6">06</option>
-              <option value="7">07</option><option value="8">08</option>
-              <option value="9">09</option><option value="10">10</option>
-              <option value="11">11</option><option value="12">12</option>
-            </select>
-            <i class="fa-solid fa-chevron-down"></i>
-          </div>
+      </div>
+      <div class="filter-group">
+        <span>Tháng</span>
+        <div class="filter-wrapper">
+          <select id="monthFilter" class="filter-select">
+            <option value="all">Cả năm</option>
+            <option value="1">01</option><option value="2">02</option>
+            <option value="3">03</option><option value="4">04</option>
+            <option value="5">05</option><option value="6">06</option>
+            <option value="7">07</option><option value="8">08</option>
+            <option value="9">09</option><option value="10">10</option>
+            <option value="11">11</option><option value="12">12</option>
+          </select>
+          <i class="fa-solid fa-chevron-down"></i>
         </div>
-        <div class="filter-group">
-          <span>Loại dự án / văn bản</span>
-          <div class="filter-wrapper">
-            <select id="typeFilter" class="filter-select">
-              <option value="all">Tất cả loại</option>
-            </select>
-            <i class="fa-solid fa-chevron-down"></i>
-          </div>
+      </div>
+      <div class="filter-group">
+        <span>Loại dự án / văn bản</span>
+        <div class="filter-wrapper">
+          <select id="typeFilter" class="filter-select">
+            <option value="all">Tất cả loại</option>
+          </select>
+          <i class="fa-solid fa-chevron-down"></i>
         </div>
-        <div class="filter-group">
-          <span>Trạng thái</span>
-          <div class="filter-wrapper">
-            <select id="statusFilter" class="filter-select">
-              <option value="all">Tất cả</option>
-              <option value="dang-thuc-hien">Đang thực hiện</option>
-              <option value="nghiem-thu">Đã nghiệm thu</option>
-              <option value="trinh-ky">Đang trình ký</option>
-              <option value="tre-han">Trễ hạn</option>
-            </select>
-            <i class="fa-solid fa-chevron-down"></i>
-          </div>
+      </div>
+      <div class="filter-group">
+        <span>Trạng thái</span>
+        <div class="filter-wrapper">
+          <select id="statusFilter" class="filter-select">
+            <option value="all">Tất cả</option>
+            <option value="dang-thuc-hien">Đang thực hiện</option>
+            <option value="nghiem-thu">Đã nghiệm thu</option>
+            <option value="trinh-ky">Đang trình ký</option>
+            <option value="tre-han">Trễ hạn</option>
+          </select>
+          <i class="fa-solid fa-chevron-down"></i>
         </div>
       </div>
     </div>
@@ -447,7 +451,6 @@
               </div>
               <div class="card-subtitle">Tổng quan dự án, văn bản trình ký, nghiệm thu nội bộ theo bộ lọc.</div>
             </div>
-            <span class="pill">QLKT DASHBOARD</span>
           </div>
 
           <div class="kpi-grid" id="kpiGrid"></div>
@@ -465,11 +468,11 @@
             <canvas id="monthChart" height="140"></canvas>
             <div class="card-footer">
               <div>
-                <span class="dot dot-blue"></span><span>Số lượng Dự án</span>
+                <span class="dot dot-blue"></span><span>Số lượng Đang thực hiện</span>
                 &nbsp;&nbsp;
-                <span class="dot dot-green"></span><span>Số lượng Dự án đã nghiệm thu</span>
+                <span class="dot dot-green"></span><span>Số lượng Đã nghiệm thu</span>
                 &nbsp;&nbsp;
-                <span class="dot dot-amber"></span><span>Số lượng trình ký</span>
+                <span class="dot dot-amber"></span><span>Số lượng Đang trình ký</span>
               </div>
               <div>Đơn vị: số dự án / tháng</div>
             </div>
@@ -510,12 +513,12 @@
     </div>
   </div>
 
-  <script>
+<script>
   // CẤU HÌNH GOOGLE SHEETS
-  const SPREADSHEET_ID = "12VZMuTxWo1o44zYpX2llB2BSGbEgn4nQldCKRUbdmeQ"; // ID chung
-  const SHEET_NAME_DUAN      = "QLKT Data Sort";                 // Dự án
-  const SHEET_NAME_TRINHKY   = "QLKT Trình ký Sort";             // Văn bản trình ký
-  const SHEET_NAME_NGHIEMTHU = "QLKT Nghiệm thu nội bộ Sort";    // Nghiệm thu
+  const SPREADSHEET_ID = "12VZMuTxWo1o44zYpX2llB2BSGbEgn4nQldCKRUbdmeQ";
+  const SHEET_NAME_DUAN      = "QLKT Data Sort";
+  const SHEET_NAME_TRINHKY   = "QLKT Trình ký Sort";
+  const SHEET_NAME_NGHIEMTHU = "QLKT Nghiệm thu nội bộ Sort";
 
   const yearFilter   = document.getElementById("yearFilter");
   const monthFilter  = document.getElementById("monthFilter");
@@ -526,8 +529,8 @@
   const loadingKpi   = document.getElementById("loadingKpi");
   const errorBox     = document.getElementById("errorBox");
 
-  let allProjects = [];   // mảng dự án sau khi join với nghiệm thu
-  let allTrinhKy  = [];   // danh sách văn bản trình ký (nếu cần dùng thêm)
+  let allProjects = [];
+  let allTrinhKy  = [];
   let chart;
 
   // ====== HÀM ĐỌC GVIZ JSON TỪ GOOGLE SHEETS ======
@@ -535,19 +538,18 @@
     const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
     const res = await fetch(url);
     const text = await res.text();
-    // Debug: log a snippet of the response to help diagnose parsing issues
-    console.debug('GViz response for sheet', sheetName, text.slice(0, 1000));
-    // Cắt lấy đúng phần JSON trong response gviz
+
+    // Kiểm tra response có chứa script GViz không (nếu sheet private hoặc sai tên sẽ không có)
+    if (!text.includes("google.visualization")) {
+      throw new Error(`Không thể tải dữ liệu từ sheet "${sheetName}". Kiểm tra quyền chia sẻ hoặc tên sheet.`);
+    }
+
+    // Cắt lấy phần JSON trong response GViz
     const start = text.indexOf('{');
     const end = text.lastIndexOf('}');
     const jsonText = text.substring(start, end + 1);
-    try {
-      return JSON.parse(jsonText);
-    } catch (err) {
-      console.error('Failed to parse GViz JSON for sheet', sheetName, err);
-      console.error('GViz raw response:', text);
-      throw err;
-    }
+
+    return JSON.parse(jsonText);
   }
 
   // Chuyển JSON gviz thành mảng object {colName: value}
@@ -562,97 +564,113 @@
     });
   }
 
-  // ====== TIỆN ÍCH NGÀY/THÁNG/NĂM TỪ CÁC SHEET ======
+  // ====== TIỆN ÍCH NGÀY/THÁNG/NĂM ======
   function parseDateString(s) {
-  if (!s && s !== 0) return null;
-  const str = String(s).trim();
+    if (!s && s !== 0) return null;
+    const str = String(s).trim();
 
-  // dd/mm/yyyy or dd-mm-yyyy
-  let m = str.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
-  if (m) return { day: Number(m[1]), month: Number(m[2]), year: Number(m[3]) };
+    // dd/mm/yyyy or dd-mm-yyyy
+    let m = str.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
+    if (m) return { day: Number(m[1]), month: Number(m[2]), year: Number(m[3]) };
 
-  // yyyy-mm-dd
-  m = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
-  if (m) return { year: Number(m[1]), month: Number(m[2]), day: Number(m[3]) };
+    // yyyy-mm-dd
+    m = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+    if (m) return { year: Number(m[1]), month: Number(m[2]), day: Number(m[3]) };
 
-  // mm/dd/yyyy
-  m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  if (m) return { month: Number(m[1]), day: Number(m[2]), year: Number(m[3]) };
+    // mm/dd/yyyy
+    m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (m) return { month: Number(m[1]), day: Number(m[2]), year: Number(m[3]) };
 
-  // Try parse number (Google Sheets / Excel serial date)
-  if (!isNaN(Number(str))) {
-    const serial = Number(str);
-    // Excel serial days since 1899-12-30. Use UTC to avoid local TZ shifts.
-    const date = new Date(Math.round((serial - 25569) * 86400 * 1000));
-    return { day: date.getUTCDate(), month: date.getUTCMonth() + 1, year: date.getUTCFullYear() };
-  }
-
-  return null;
-}
-
-function getMonthFromRow(row) {
-  const keys = ["Ngày", "Ngay", "Date", "date", "ngay"];
-  for (const k of keys) {
-    if (row[k] !== undefined && row[k] !== null && row[k] !== "") {
-      const d = parseDateString(row[k]);
-      if (d && d.month && d.month >= 1 && d.month <= 12) return d.month;
+    // Excel serial number
+    if (!isNaN(Number(str))) {
+      const serial = Number(str);
+      const date = new Date(Math.round((serial - 25569) * 86400 * 1000));
+      return { day: date.getUTCDate(), month: date.getUTCMonth() + 1, year: date.getUTCFullYear() };
     }
+
+    return null;
   }
-  return 0;
-}
+
+  function getMonthFromRow(row) {
+    const keys = ["Ngày", "Ngay", "Date", "date", "ngay", "Ngày ký", "Ngày nghiệm thu"];
+    for (const k of keys) {
+      if (row[k] !== undefined && row[k] !== null && row[k] !== "") {
+        const d = parseDateString(row[k]);
+        if (d && d.month && d.month >= 1 && d.month <= 12) return d.month;
+      }
+    }
+    return 0;
+  }
+
+  function getYearFromRow(row) {
+    const yearKeys = ["Năm", "Nam", "Year", "year"];
+    for (const k of yearKeys) {
+      if (row[k] !== undefined && row[k] !== null && row[k] !== "") {
+        const y = Number(row[k]);
+        if (!isNaN(y) && y >= 2000 && y <= 2100) return y;
+      }
+    }
+    // Thử lấy từ các trường ngày
+    const keys = ["Ngày", "Ngay", "Date", "date", "ngay", "Ngày ký", "Ngày nghiệm thu"];
+    for (const k of keys) {
+      if (row[k] !== undefined && row[k] !== null && row[k] !== "") {
+        const d = parseDateString(row[k]);
+        if (d && d.year && d.year >= 2000 && d.year <= 2100) return d.year;
+      }
+    }
+    return 0;
+  }
 
   // ====== NORMALIZE TỪNG SHEET ======
-
-  // 1) Dự án: QLKT Data Sort
   function normalizeDuAn(row) {
     const year  = getYearFromRow(row) || 0;
     const month = getMonthFromRow(row) || 0;
 
     return {
-      keyName: (row["Tên dự án"] || row["Tên Hợp đồng"] || "").toString().trim(), // dùng làm khóa ghép với nghiệm thu
+      keyName: (row["Tên dự án"] || row["Tên Hợp đồng"] || "").toString().trim(),
       name: row["Tên dự án"] || row["Tên Hợp đồng"] || "Chưa đặt tên",
       unit: row["Đơn vị thực hiện"] || "",
       leader: row["Chủ nhiệm"] || "",
       staff: row["Chuyên viên phụ trách"] || "",
       year: isNaN(year) ? 0 : year,
       month: isNaN(month) ? 0 : month,
-      // mặc định, sẽ được cập nhật từ sheet nghiệm thu
       status: "dang-thuc-hien",
-      progress: 0,
-      type: row["Loại"] || row["Loại dự án"] || "Dự án"   // cố gắng lấy cột Loại nếu có
+      progress: Number(row["Tỉ lệ hoàn thành"] || row["Progress"] || 0) || 0,
+      type: row["Loại"] || row["Loại dự án"] || "Dự án"
     };
   }
 
-  // 2) Nghiệm thu nội bộ: QLKT Nghiệm thu nội bộ Sort
   function normalizeNghiemThu(row) {
     const yearFromRow = getYearFromRow(row) || 0;
     const month = getMonthFromRow(row) || 0;
 
-    const statusRaw = (row["Tình hình thực hiện"] || row["Tình trạng"] || "").toString().toLowerCase(); 
+    const statusRaw = (row["Tình hình thực hiện"] || row["Tình trạng"] || "").toString().toLowerCase();
     let statusKey = "dang-thuc-hien";
     if (statusRaw.includes("nghiệm") || statusRaw.includes("nghiem")) statusKey = "nghiem-thu";
     else if (statusRaw.includes("trình") || statusRaw.includes("trinh")) statusKey = "trinh-ky";
     else if (statusRaw.includes("trễ") || statusRaw.includes("tre") || statusRaw.includes("chậm")) statusKey = "tre-han";
 
     const progressRaw = row["Đánh giá tỉ lệ hoàn thành công việc"] || row["Tỉ lệ hoàn thành"] || row["Progress"] || 0;
-    const progress = Number(progressRaw);
+    const progress = Number(progressRaw) || 0;
 
     return {
-      contractName: (row["Tên Hợp đồng"] || row["Tên dự án"] || "").toString().trim(), // ghép với Tên dự án
+      contractName: (row["Tên Hợp đồng"] || row["Tên dự án"] || "").toString().trim(),
       year: isNaN(yearFromRow) ? 0 : yearFromRow,
       month: isNaN(month) ? 0 : month,
       status: statusKey,
-      progress: isNaN(progress) ? 0 : progress
+      progress
     };
   }
 
-  // 3) Trình ký: QLKT Trình ký Sort (chỉ để mở rộng KPI nếu cần)
   function normalizeTrinhKy(row) {
     const year  = getYearFromRow(row) || 0;
+    const month = getMonthFromRow(row) || 0;
     return {
       year: isNaN(year) ? 0 : year,
+      month: isNaN(month) ? 0 : month,
       author: row["Nhân viên soạn thảo văn bản"] || "",
-      signer: row["Lãnh đạo ký"] || ""
+      signer: row["Lãnh đạo ký"] || "",
+      title: row["Tên văn bản"] || row["Nội dung"] || ""
     };
   }
 
@@ -661,26 +679,22 @@ function getMonthFromRow(row) {
     const duAnList = duAnRows.map(normalizeDuAn);
     const ntList   = nghiemThuRows.map(normalizeNghiemThu);
 
-    // Tạo map theo tên (lowercase) để ghép nhanh
     const ntMap = new Map();
     ntList.forEach(nt => {
       const key = nt.contractName.toLowerCase();
       if (!key) return;
-      // Nếu có nhiều bản ghi cùng tên, lấy bản mới nhất theo year (đơn giản)
       const exist = ntMap.get(key);
       if (!exist || nt.year >= exist.year) {
         ntMap.set(key, nt);
       }
     });
 
-    // Gán trạng thái & progress từ nghiệm thu nếu trùng tên
     duAnList.forEach(p => {
       const key = p.keyName.toLowerCase();
       const match = ntMap.get(key);
       if (match) {
         p.status   = match.status;
         p.progress = match.progress;
-        // Nếu duAn chưa có year/tháng và bên nghiệm thu có thì lấy luôn
         if (!p.year && match.year)  p.year  = match.year;
         if (!p.month && match.month) p.month = match.month;
       }
@@ -724,7 +738,7 @@ function getMonthFromRow(row) {
     const signing   = filtered.filter(p => p.status === "trinh-ky").length;
     const late      = filtered.filter(p => p.status === "tre-han").length;
     const avgProgress = filtered.length
-      ? Math.round(filtered.reduce((sum, p) => sum + p.progress, 0) / filtered.length)
+      ? Math.round(filtered.reduce((sum, p) => sum + (Number(p.progress) || 0), 0) / filtered.length)
       : 0;
     return { total, inProgress, approved, signing, late, avgProgress };
   }
@@ -859,7 +873,7 @@ function getMonthFromRow(row) {
   }
 
   function renderTable(filtered) {
-    const topProjects = [...filtered].sort((a, b) => b.progress - a.progress).slice(0, 8);
+    const topProjects = [...filtered].sort((a, b) => (Number(b.progress)||0) - (Number(a.progress)||0)).slice(0, 8);
     projectTable.innerHTML = topProjects.map(p => `
       <div class="table-row">
         <div>
@@ -872,10 +886,10 @@ function getMonthFromRow(row) {
         <div>${p.leader}</div>
         <div>
           <div style="display:flex;align-items:center;gap:6px;">
-            <span>${p.progress}%</span>
+            <span>${Number(p.progress)||0}%</span>
           </div>
           <div class="progress-bar" style="margin-top:3px;">
-            <div class="progress-inner" style="width:${p.progress}%;"></div>
+            <div class="progress-inner" style="width:${Number(p.progress)||0}%;"></div>
           </div>
         </div>
         <div class="text-right">
@@ -913,6 +927,11 @@ function getMonthFromRow(row) {
       opt.textContent = t;
       typeFilter.appendChild(opt);
     });
+
+    yearFilter.addEventListener("change", updateDashboard);
+    monthFilter.addEventListener("change", updateDashboard);
+    typeFilter.addEventListener("change", updateDashboard);
+    statusFilter.addEventListener("change", updateDashboard);
   }
 
   // ====== KHỞI TẠO ======
@@ -930,8 +949,9 @@ function getMonthFromRow(row) {
       const trinhKyRows   = parseTable(trinhKyJson);
       const nghiemThuRows = parseTable(nghiemThuJson);
 
+      // Chuẩn hóa và join dữ liệu
       allProjects = buildProjects(duAnRows, nghiemThuRows);
-      allTrinhKy  = trinhKyRows.map(normalizeTrinhKy); // hiện chưa dùng, để dành mở rộng KPI sau
+      allTrinhKy  = trinhKyRows.map(normalizeTrinhKy); // có thể dùng mở rộng KPI sau
 
       if (!allProjects.length) {
         loadingKpi.textContent = "Không đọc được dữ liệu dự án. Kiểm tra lại tên cột và sheet.";
@@ -940,16 +960,11 @@ function getMonthFromRow(row) {
 
       initFilters(allProjects);
       updateDashboard();
-
-      yearFilter.addEventListener("change", updateDashboard);
-      monthFilter.addEventListener("change", updateDashboard);
-      typeFilter.addEventListener("change", updateDashboard);
-      statusFilter.addEventListener("change", updateDashboard);
     } catch (err) {
-      console.error(err);
       loadingKpi.style.display = "none";
       errorBox.style.display = "block";
       errorBox.textContent = "Lỗi khi tải dữ liệu từ Google Sheets. Hãy kiểm tra quyền chia sẻ (public) và tên sheet.";
+      console.error(err);
     }
   }
 
