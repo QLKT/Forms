@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Thống kê Tổng hợp Dữ liệu QLKT</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Font + Icon -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root {
+      --bg: #0f172a;
+      --bg-soft: #111827;
+      --card: #020617;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.15);
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --border: #1f2937;
+      --danger: #f97373;
+      --success: #4ade80;
+      --warning: #facc15;
+      --radius-lg: 16px;
+      --radius-md: 10px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at top left, #1d283a, #020617 60%);
+      color: var(--text);
+      padding: 20px;
+    }
+
+    .dashboard {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .header-title h1 {
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .header-title span {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 4px;
+      display: block;
+    }
+
+    .pill {
+      background: linear-gradient(90deg, rgba(56, 189, 248, 0.2), rgba(129, 140, 248, 0.2));
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+
+    .filters {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .filter-select {
+      background: var(--bg-soft);
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 6px 26px 6px 10px;
+      font-size: 13px;
+      outline: none;
+      min-width: 120px;
+      appearance: none;
+      position: relative;
+    }
+
+    .filter-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+
+    .filter-wrapper i {
+      position: absolute;
+      right: 9px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 11px;
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 2.1fr 1.2fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.05), var(--card));
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.9);
+      padding: 14px 16px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      gap: 6px;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-title i {
+      color: var(--accent);
+      font-size: 14px;
+    }
+
+    .card-subtitle {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    @media (max-width: 900px) {
+      .kpi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    .kpi-card {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.9));
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      padding: 10px 10px 9px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .kpi-value-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .kpi-value {
+      font-size: 22px;
+      font-weight: 600;
+    }
+
+    .kpi-chip {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--muted);
+      background: rgba(15, 23, 42, 0.9);
+    }
+
+    .kpi-chip.positive {
+      border-color: rgba(74, 222, 128, 0.5);
+      color: var(--success);
+      background: rgba(22, 163, 74, 0.08);
+    }
+
+    .kpi-chip.warning {
+      border-color: rgba(250, 204, 21, 0.5);
+      color: var(--warning);
+      background: rgba(250, 204, 21, 0.08);
+    }
+
+    .kpi-chip.negative {
+      border-color: rgba(248, 113, 113, 0.5);
+      color: var(--danger);
+      background: rgba(248, 113, 113, 0.08);
+    }
+
+    .kpi-meta {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .table-wrapper {
+      margin-top: 8px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .table-header-row {
+      display: grid;
+      grid-template-columns: 2.2fr 1.2fr 1.2fr 0.9fr 0.9fr;
+      background: var(--bg-soft);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      padding: 6px 10px;
+    }
+
+    .table-body {
+      max-height: 260px;
+      overflow-y: auto;
+    }
+
+    .table-row {
+      display: grid;
+      grid-template-columns: 2.2fr 1.2fr 1.2fr 0.9fr 0.9fr;
+      font-size: 12px;
+      padding: 6px 10px;
+      border-top: 1px solid var(--border);
+      align-items: center;
+    }
+
+    .table-row:nth-child(2n) {
+      background: rgba(15, 23, 42, 0.85);
+    }
+
+    .status-pill {
+      font-size: 11px;
+      border-radius: 999px;
+      padding: 2px 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .status-green {
+      background: rgba(22, 163, 74, 0.1);
+      color: var(--success);
+      border: 1px solid rgba(22, 163, 74, 0.4);
+    }
+
+    .status-blue {
+      background: rgba(59, 130, 246, 0.1);
+      color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.4);
+    }
+
+    .status-amber {
+      background: rgba(245, 158, 11, 0.1);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+    }
+
+    .status-red {
+      background: rgba(248, 113, 113, 0.1);
+      color: #fecaca;
+      border: 1px solid rgba(248, 113, 113, 0.4);
+    }
+
+    .progress-bar {
+      height: 6px;
+      border-radius: 999px;
+      background: #020617;
+      overflow: hidden;
+      border: 1px solid #111827;
+    }
+
+    .progress-inner {
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #22c55e, #a3e635);
+    }
+
+    .text-right { text-align: right; }
+
+    .mini-tag {
+      font-size: 10px;
+      color: var(--muted);
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px dashed rgba(148, 163, 184, 0.4);
+    }
+
+    .card-footer {
+      margin-top: 8px;
+      font-size: 11px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      display: inline-block;
+      margin-right: 4px;
+    }
+
+    .dot-blue { background: #38bdf8; }
+    .dot-green { background: #22c55e; }
+    .dot-amber { background: #facc15; }
+
+    .loading {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    .error {
+      color: var(--danger);
+      font-size: 12px;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard">
+    <!-- HEADER -->
+    <div class="header">
+      <div class="header-title">
+        <div>
+          <h1>
+            <i class="fa-solid fa-layer-group"></i>
+            Thống kê tổng hợp Dữ liệu QLKT
+          </h1>
+          <span>Thống kê dữ liệu các dự án, văn bản trình ký, nghiệm thu nội bộ.</span>
+        </div>
+      </div>
+      <div class="filters">
+        <div class="filter-group">
+          <span>Năm</span>
+          <div class="filter-wrapper">
+            <select id="yearFilter" class="filter-select">
+              <option value="all">Tất cả</option>
+            </select>
+            <i class="fa-solid fa-chevron-down"></i>
+          </div>
+        </div>
+        <div class="filter-group">
+          <span>Tháng</span>
+          <div class="filter-wrapper">
+            <select id="monthFilter" class="filter-select">
+              <option value="all">Cả năm</option>
+              <option value="1">01</option><option value="2">02</option>
+              <option value="3">03</option><option value="4">04</option>
+              <option value="5">05</option><option value="6">06</option>
+              <option value="7">07</option><option value="8">08</option>
+              <option value="9">09</option><option value="10">10</option>
+              <option value="11">11</option><option value="12">12</option>
+            </select>
+            <i class="fa-solid fa-chevron-down"></i>
+          </div>
+        </div>
+        <div class="filter-group">
+          <span>Loại dự án / văn bản</span>
+          <div class="filter-wrapper">
+            <select id="typeFilter" class="filter-select">
+              <option value="all">Tất cả loại</option>
+            </select>
+            <i class="fa-solid fa-chevron-down"></i>
+          </div>
+        </div>
+        <div class="filter-group">
+          <span>Trạng thái</span>
+          <div class="filter-wrapper">
+            <select id="statusFilter" class="filter-select">
+              <option value="all">Tất cả</option>
+              <option value="dang-thuc-hien">Đang thực hiện</option>
+              <option value="nghiem-thu">Đã nghiệm thu</option>
+              <option value="trinh-ky">Đang trình ký</option>
+              <option value="tre-han">Trễ hạn</option>
+            </select>
+            <i class="fa-solid fa-chevron-down"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GRID -->
+    <div class="grid">
+      <!-- LEFT -->
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">
+                <i class="fa-solid fa-gauge-high"></i>
+                Chỉ số tổng hợp
+              </div>
+              <div class="card-subtitle">Tổng quan dự án, văn bản trình ký, nghiệm thu nội bộ theo bộ lọc.</div>
+            </div>
+            <span class="pill">QLKT DASHBOARD</span>
+          </div>
+
+          <div class="kpi-grid" id="kpiGrid"></div>
+          <div class="loading" id="loadingKpi">Đang tải dữ liệu từ Google Sheets...</div>
+          <div class="error" id="errorBox" style="display:none;"></div>
+
+          <div style="margin-top: 10px;">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="fa-solid fa-chart-column"></i>
+                Dự án theo tháng
+              </div>
+              <span class="mini-tag">Số lượng dự án theo tiến độ trong năm</span>
+            </div>
+            anvas id="monthChart" height="140"></canvas>
+            <div class="card-footer">
+              <div>
+                <span class="dot dot-blue"></span><span>Số lượng Dự án</span>
+                &nbsp;&nbsp;
+                <span class="dot dot-green"></span><span>Số lượng Dự án đã nghiệm thu</span>
+                &nbsp;&nbsp;
+                <span class="dot dot-amber"></span><span>Số lượng trình ký</span>
+              </div>
+              <div>Đơn vị: số dự án / tháng</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT -->
+      <div>
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">
+                <i class="fa-solid fa-table-list"></i>
+                Danh sách dự án tiêu biểu
+              </div>
+              <div class="card-subtitle">Top dự án theo tỉ lệ hoàn thành & tình trạng hồ sơ.</div>
+            </div>
+          </div>
+
+          <div class="table-wrapper">
+            <div class="table-header-row">
+              <div>Dự án</div>
+              <div>Đơn vị thực hiện</div>
+              <div>Chủ nhiệm</div>
+              <div>Tỷ lệ hoàn thành</div>
+              <div class="text-right">Trạng thái</div>
+            </div>
+            <div class="table-body" id="projectTable"></div>
+          </div>
+
+          <div class="card-footer">
+            <div>Dữ liệu QLKT.</div>
+            <div class="mini-tag">Nguồn: P.QLKT</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  // CẤU HÌNH GOOGLE SHEETS
+  const SPREADSHEET_ID = "2PACX-1vTcFlPGPa6iJkXL2jPqOd0cFqxoAd-1k-qLTLhHPwbeP9Exb3RFitVwDp8AutSdTdaHuIimppay9dKe"; // ID chung
+  const SHEET_NAME_DUAN      = "QLKT Data Sort";                 // Dự án
+  const SHEET_NAME_TRINHKY   = "QLKT Trình ký Sort";             // Văn bản trình ký
+  const SHEET_NAME_NGHIEMTHU = "QLKT Nghiệm thu nội bộ Sort";    // Nghiệm thu
+
+  const yearFilter   = document.getElementById("yearFilter");
+  const monthFilter  = document.getElementById("monthFilter");
+  const typeFilter   = document.getElementById("typeFilter");
+  const statusFilter = document.getElementById("statusFilter");
+  const kpiGrid      = document.getElementById("kpiGrid");
+  const projectTable = document.getElementById("projectTable");
+  const loadingKpi   = document.getElementById("loadingKpi");
+  const errorBox     = document.getElementById("errorBox");
+
+  let allProjects = [];   // mảng dự án sau khi join với nghiệm thu
+  let allTrinhKy  = [];   // danh sách văn bản trình ký (nếu cần dùng thêm)
+  let chart;
+
+  // ====== HÀM ĐỌC GVIZ JSON TỪ GOOGLE SHEETS ======
+  async function fetchSheetJSON(sheetName) {
+    const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
+    const res = await fetch(url);
+    const text = await res.text();
+    // Cắt lấy đúng phần JSON trong response gviz [web:40]
+    const jsonText = text.substring(text.indexOf("{"), text.lastIndexOf("}") + 1);
+    return JSON.parse(jsonText);
+  }
+
+  // Chuyển JSON gviz thành mảng object {colName: value}
+  function parseTable(gvizJson) {
+    const cols = gvizJson.table.cols.map(c => c.label || c.id);
+    return gvizJson.table.rows.map(r => {
+      const obj = {};
+      r.c.forEach((cell, idx) => {
+        obj[cols[idx] || `col${idx}`] = cell ? cell.v : null;
+      });
+      return obj;
+    });
+  }
+
+  // ====== NORMALIZE TỪNG SHEET ======
+
+  // 1) Dự án: QLKT Data Sort
+  function normalizeDuAn(row) {
+    const year  = Number(row["Năm"] || 0);
+    // Tách tháng từ cột "Ngày" dạng dd/mm/yyyy (nếu có)
+    let month = 0;
+    if (row["Ngày"]) {
+      const parts = row["Ngày"].toString().split("/");
+      if (parts.length >= 2) month = Number(parts[1]);
+    }
+
+    return {
+      keyName: (row["Tên dự án"] || "").toString().trim(), // dùng làm khóa ghép với nghiệm thu
+      name: row["Tên dự án"] || "Chưa đặt tên",
+      unit: row["Đơn vị thực hiện"] || "",
+      leader: row["Chủ nhiệm"] || "",
+      staff: row["Chuyên viên phụ trách"] || "",
+      year: isNaN(year) ? 0 : year,
+      month: isNaN(month) ? 0 : month,
+      // mặc định, sẽ được cập nhật từ sheet nghiệm thu
+      status: "dang-thuc-hien",
+      progress: 0,
+      type: "Dự án"   // hiện chưa có cột loại, gán mặc định; sau bạn có thể thêm cột "Loại dự án"
+    };
+  }
+
+  // 2) Nghiệm thu nội bộ: QLKT Nghiệm thu nội bộ Sort
+  function normalizeNghiemThu(row) {
+    const year  = Number(row["Year"] || 0);
+    let month = 0;
+    if (row["Ngày"]) {
+      const parts = row["Ngày"].toString().split("/");
+      if (parts.length >= 2) month = Number(parts[1]);
+    }
+
+    const statusRaw = (row["Tình hình thực hiện"] || "").toString().toLowerCase();
+    let statusKey = "dang-thuc-hien";
+    if (statusRaw.includes("nghiệm") || statusRaw.includes("nghiem")) statusKey = "nghiem-thu";
+    else if (statusRaw.includes("trình") || statusRaw.includes("trinh")) statusKey = "trinh-ky";
+    else if (statusRaw.includes("trễ") || statusRaw.includes("tre") || statusRaw.includes("chậm")) statusKey = "tre-han";
+
+    const progressRaw = row["Đánh giá tỉ lệ hoàn thành công việc"] || 0;
+    const progress = Number(progressRaw);
+
+    return {
+      contractName: (row["Tên Hợp đồng"] || "").toString().trim(), // ghép với Tên dự án
+      year: isNaN(year) ? 0 : year,
+      month: isNaN(month) ? 0 : month,
+      status: statusKey,
+      progress: isNaN(progress) ? 0 : progress
+    };
+  }
+
+  // 3) Trình ký: QLKT Trình ký Sort (chỉ để mở rộng KPI nếu cần)
+  function normalizeTrinhKy(row) {
+    const year  = Number(row["Year"] || 0);
+    return {
+      year: isNaN(year) ? 0 : year,
+      author: row["Nhân viên soạn thảo văn bản"] || "",
+      signer: row["Lãnh đạo ký"] || ""
+    };
+  }
+
+  // ====== JOIN DỮ LIỆU DỰ ÁN + NGHIỆM THU ======
+  function buildProjects(duAnRows, nghiemThuRows) {
+    const duAnList = duAnRows.map(normalizeDuAn);
+    const ntList   = nghiemThuRows.map(normalizeNghiemThu);
+
+    // Tạo map theo tên (lowercase) để ghép nhanh
+    const ntMap = new Map();
+    ntList.forEach(nt => {
+      const key = nt.contractName.toLowerCase();
+      if (!key) return;
+      // Nếu có nhiều bản ghi cùng tên, lấy bản mới nhất theo year (đơn giản)
+      const exist = ntMap.get(key);
+      if (!exist || nt.year >= exist.year) {
+        ntMap.set(key, nt);
+      }
+    });
+
+    // Gán trạng thái & progress từ nghiệm thu nếu trùng tên
+    duAnList.forEach(p => {
+      const key = p.keyName.toLowerCase();
+      const match = ntMap.get(key);
+      if (match) {
+        p.status   = match.status;
+        p.progress = match.progress;
+        // Nếu duAn chưa có year/tháng và bên nghiệm thu có thì lấy luôn
+        if (!p.year && match.year)  p.year  = match.year;
+        if (!p.month && match.month) p.month = match.month;
+      }
+    });
+
+    return duAnList;
+  }
+
+  // ====== HÀM TIỆN ÍCH CHUNG ======
+  function getYearsFromProjects(projects) {
+    const years = new Set();
+    projects.forEach(p => { if (p.year) years.add(p.year); });
+    return Array.from(years).sort();
+  }
+
+  function getTypesFromProjects(projects) {
+    const types = new Set();
+    projects.forEach(p => { if (p.type) types.add(p.type); });
+    return Array.from(types).sort();
+  }
+
+  function applyFilters(projects) {
+    const y = yearFilter.value;
+    const m = monthFilter.value;
+    const t = typeFilter.value;
+    const s = statusFilter.value;
+
+    return projects.filter(p => {
+      if (y !== "all" && p.year.toString() !== y) return false;
+      if (m !== "all" && p.month.toString() !== m) return false;
+      if (t !== "all" && p.type !== t) return false;
+      if (s !== "all" && p.status !== s) return false;
+      return true;
+    });
+  }
+
+  function calcKPI(filtered) {
+    const total     = filtered.length;
+    const inProgress= filtered.filter(p => p.status === "dang-thuc-hien").length;
+    const approved  = filtered.filter(p => p.status === "nghiem-thu").length;
+    const signing   = filtered.filter(p => p.status === "trinh-ky").length;
+    const late      = filtered.filter(p => p.status === "tre-han").length;
+    const avgProgress = filtered.length
+      ? Math.round(filtered.reduce((sum, p) => sum + p.progress, 0) / filtered.length)
+      : 0;
+    return { total, inProgress, approved, signing, late, avgProgress };
+  }
+
+  function renderKPI(kpi) {
+    kpiGrid.innerHTML = `
+      <div class="kpi-card">
+        <div class="kpi-label">Tổng số dự án</div>
+        <div class="kpi-value-row">
+          <div class="kpi-value">${kpi.total}</div>
+          <div class="kpi-chip positive">
+            <i class="fa-solid fa-arrow-trend-up"></i> Live
+          </div>
+        </div>
+        <div class="kpi-meta">Bao gồm tất cả loại dự án trong bộ lọc.</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">Đã nghiệm thu</div>
+        <div class="kpi-value-row">
+          <div class="kpi-value">${kpi.approved}</div>
+          <div class="kpi-chip">
+            <span class="dot dot-green"></span>
+            Thanh toán & lưu hồ sơ
+          </div>
+        </div>
+        <div class="kpi-meta">Dự án đã hoàn tất nghiệm thu kỹ thuật.</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">Đang trình ký / trễ hạn</div>
+        <div class="kpi-value-row">
+          <div class="kpi-value">${kpi.signing}</div>
+          <div class="kpi-chip ${kpi.late ? "negative" : "warning"}">
+            <i class="fa-solid fa-clock"></i>
+            ${kpi.late ? kpi.late + " trễ hạn" : "Theo dõi tiến độ"}
+          </div>
+        </div>
+        <div class="kpi-meta">Số dự án đang hoàn thiện thủ tục trình ký.</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">Tỉ lệ hoàn thành TB</div>
+        <div class="kpi-value-row">
+          <div class="kpi-value">${kpi.avgProgress}%</div>
+          <div class="kpi-chip">
+            <i class="fa-solid fa-clipboard-check"></i> Progress
+          </div>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-inner" style="width:${kpi.avgProgress}%;"></div>
+        </div>
+        <div class="kpi-meta">Trung bình toàn bộ dự án trong bộ lọc.</div>
+      </div>
+    `;
+  }
+
+  function renderChart(filtered) {
+    const months = Array.from({ length: 12 }, (_, i) => i + 1);
+    const dataInProgress = months.map(m => filtered.filter(p => p.month === m && p.status === "dang-thuc-hien").length);
+    const dataApproved   = months.map(m => filtered.filter(p => p.month === m && p.status === "nghiem-thu").length);
+    const dataSigning    = months.map(m => filtered.filter(p => p.month === m && p.status === "trinh-ky").length);
+
+    const ctx = document.getElementById("monthChart").getContext("2d");
+    if (chart) chart.destroy();
+
+    chart = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: months.map(m => m.toString().padStart(2, "0")),
+        datasets: [
+          {
+            label: "Đang thực hiện",
+            data: dataInProgress,
+            backgroundColor: "rgba(56, 189, 248, 0.7)",
+            borderRadius: 4,
+            barPercentage: 0.65,
+            categoryPercentage: 0.5
+          },
+          {
+            label: "Đã nghiệm thu",
+            data: dataApproved,
+            backgroundColor: "rgba(74, 222, 128, 0.8)",
+            borderRadius: 4,
+            barPercentage: 0.65,
+            categoryPercentage: 0.5
+          },
+          {
+            label: "Đang trình ký",
+            data: dataSigning,
+            backgroundColor: "rgba(250, 204, 21, 0.8)",
+            borderRadius: 4,
+            barPercentage: 0.65,
+            categoryPercentage: 0.5
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => {
+                const label = ctx.dataset.label || "";
+                return `${label}: ${ctx.parsed.y} dự án`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { color: "#9ca3af", font: { size: 11 } }
+          },
+          y: {
+            beginAtZero: true,
+            grid: { color: "rgba(55, 65, 81, 0.6)" },
+            ticks: { color: "#9ca3af", stepSize: 1, font: { size: 11 } }
+          }
+        }
+      }
+    });
+  }
+
+  function statusClass(status) {
+    switch (status) {
+      case "nghiem-thu": return "status-green";
+      case "trinh-ky":   return "status-amber";
+      case "tre-han":    return "status-red";
+      default:           return "status-blue";
+    }
+  }
+
+  function statusText(status) {
+    switch (status) {
+      case "nghiem-thu":    return "Đã nghiệm thu";
+      case "trinh-ky":      return "Đang trình ký";
+      case "tre-han":       return "Trễ hạn";
+      case "dang-thuc-hien":
+      default:              return "Đang thực hiện";
+    }
+  }
+
+  function renderTable(filtered) {
+    const topProjects = [...filtered].sort((a, b) => b.progress - a.progress).slice(0, 8);
+    projectTable.innerHTML = topProjects.map(p => `
+      <div class="table-row">
+        <div>
+          <div>${p.name}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px;">
+            ${p.type} • ${p.year || ""}-${String(p.month || "").padStart(2, "0")}
+          </div>
+        </div>
+        <div>${p.unit}</div>
+        <div>${p.leader}</div>
+        <div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span>${p.progress}%</span>
+          </div>
+          <div class="progress-bar" style="margin-top:3px;">
+            <div class="progress-inner" style="width:${p.progress}%;"></div>
+          </div>
+        </div>
+        <div class="text-right">
+          <span class="status-pill ${statusClass(p.status)}">
+            <i class="fa-solid fa-circle-dot" style="font-size:6px;"></i>
+            ${statusText(p.status)}
+          </span>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  function updateDashboard() {
+    const filtered = applyFilters(allProjects);
+    const kpi = calcKPI(filtered);
+    renderKPI(kpi);
+    renderChart(filtered);
+    renderTable(filtered);
+    loadingKpi.style.display = "none";
+  }
+
+  function initFilters(projects) {
+    const years = getYearsFromProjects(projects);
+    years.forEach(y => {
+      const opt = document.createElement("option");
+      opt.value = y.toString();
+      opt.textContent = y.toString();
+      yearFilter.appendChild(opt);
+    });
+
+    const types = getTypesFromProjects(projects);
+    types.forEach(t => {
+      const opt = document.createElement("option");
+      opt.value = t;
+      opt.textContent = t;
+      typeFilter.appendChild(opt);
+    });
+  }
+
+  // ====== KHỞI TẠO ======
+  async function init() {
+    try {
+      loadingKpi.textContent = "Đang tải dữ liệu từ 3 bảng Google Sheets...";
+
+      const [duAnJson, trinhKyJson, nghiemThuJson] = await Promise.all([
+        fetchSheetJSON(SHEET_NAME_DUAN),
+        fetchSheetJSON(SHEET_NAME_TRINHKY),
+        fetchSheetJSON(SHEET_NAME_NGHIEMTHU)
+      ]);
+
+      const duAnRows      = parseTable(duAnJson);
+      const trinhKyRows   = parseTable(trinhKyJson);
+      const nghiemThuRows = parseTable(nghiemThuJson);
+
+      allProjects = buildProjects(duAnRows, nghiemThuRows);
+      allTrinhKy  = trinhKyRows.map(normalizeTrinhKy); // hiện chưa dùng, để dành mở rộng KPI sau
+
+      if (!allProjects.length) {
+        loadingKpi.textContent = "Không đọc được dữ liệu dự án. Kiểm tra lại tên cột và sheet.";
+        return;
+      }
+
+      initFilters(allProjects);
+      updateDashboard();
+
+      yearFilter.addEventListener("change", updateDashboard);
+      monthFilter.addEventListener("change", updateDashboard);
+      typeFilter.addEventListener("change", updateDashboard);
+      statusFilter.addEventListener("change", updateDashboard);
+    } catch (err) {
+      console.error(err);
+      loadingKpi.style.display = "none";
+      errorBox.style.display = "block";
+      errorBox.textContent = "Lỗi khi tải dữ liệu từ Google Sheets. Hãy kiểm tra quyền chia sẻ (public) và tên sheet.";
+    }
+  }
+
+  init();
+</script>
+</body>
+</html>
