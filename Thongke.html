@@ -564,55 +564,42 @@
 
   // ====== TIỆN ÍCH NGÀY/THÁNG/NĂM TỪ CÁC SHEET ======
   function parseDateString(s) {
-    if (!s && s !== 0) return null;
-    const str = String(s).trim();
-    // dd/mm/yyyy or dd-mm-yyyy
-    let m = str.match(/^(
-    (\d{1,2})[\/
-    -](\d{1,2})[\/
-    -](\d{4})$/);
-    if (m) return { day: Number(m[1]), month: Number(m[2]), year: Number(m[3]) };
-    // yyyy-mm-dd
-    m = str.match(/^(
-    (\d{4})[\-](\d{1,2})[\-](\d{1,2})$/);
-    if (m) return { year: Number(m[1]), month: Number(m[2]), day: Number(m[3]) };
-    // mm/dd/yyyy
-    m = str.match(/^(
-    (\d{1,2})[\/](\d{1,2})[\/](\d{4})$/);
-    if (m) return { month: Number(m[1]), day: Number(m[2]), year: Number(m[3]) };
-    // Try parse number (Google Sheets serial date) -> convert from Excel epoch if needed
-    if (!isNaN(Number(s))) {
-      // Excel-style serial date (days since 1899-12-30)
-      const serial = Number(s);
-      const date = new Date(Math.round((serial - 25569) * 86400 * 1000));
-      return { day: date.getUTCDate(), month: date.getUTCMonth() + 1, year: date.getUTCFullYear() };
-    }
-    return null;
+  if (!s && s !== 0) return null;
+  const str = String(s).trim();
+
+  // dd/mm/yyyy or dd-mm-yyyy
+  let m = str.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
+  if (m) return { day: Number(m[1]), month: Number(m[2]), year: Number(m[3]) };
+
+  // yyyy-mm-dd
+  m = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (m) return { year: Number(m[1]), month: Number(m[2]), day: Number(m[3]) };
+
+  // mm/dd/yyyy
+  m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (m) return { month: Number(m[1]), day: Number(m[2]), year: Number(m[3]) };
+
+  // Try parse number (Google Sheets / Excel serial date)
+  if (!isNaN(Number(str))) {
+    const serial = Number(str);
+    // Excel serial days since 1899-12-30. Use UTC to avoid local TZ shifts.
+    const date = new Date(Math.round((serial - 25569) * 86400 * 1000));
+    return { day: date.getUTCDate(), month: date.getUTCMonth() + 1, year: date.getUTCFullYear() };
   }
 
-  function getMonthFromRow(row) {
-    const keys = ["Ngày", "Ngay", "Date", "date", "ngay"]; 
-    for (const k of keys) {
-      if (row[k]) {
-        const d = parseDateString(row[k]);
-        if (d && d.month) return d.month;
-      }
-    }
-    return 0;
-  }
+  return null;
+}
 
-  function getYearFromRow(row) {
-    // prefer explicit Year column
-    if (row["Year"] && Number(row["Year"])) return Number(row["Year"]); 
-    const keys = ["Năm", "Year", "Ngày", "Ngay", "Date", "date", "ngay"]; 
-    for (const k of keys) {
-      if (row[k]) {
-        const d = parseDateString(row[k]);
-        if (d && d.year) return d.year;
-      }
+function getMonthFromRow(row) {
+  const keys = ["Ngày", "Ngay", "Date", "date", "ngay"];
+  for (const k of keys) {
+    if (row[k] !== undefined && row[k] !== null && row[k] !== "") {
+      const d = parseDateString(row[k]);
+      if (d && d.month && d.month >= 1 && d.month <= 12) return d.month;
     }
-    return 0;
   }
+  return 0;
+}
 
   // ====== NORMALIZE TỪNG SHEET ======
 
