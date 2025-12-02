@@ -67,7 +67,7 @@
           <span>Thống kê dữ liệu các dự án, văn bản trình ký, nghiệm thu nội bộ.</span>
         </div>
       </div>
-      <span class="pill">Copyright PQLKT 2025</span>
+      <span class="pill">QLKT DASHBOARD</span>
     </div>
 
     <div class="filters">
@@ -109,6 +109,7 @@
           </div>
         </div>
       </div>
+      <!-- dynamicFilters vẫn tồn tại nhưng một số trường bị loại bỏ theo danh sách exclude -->
       <div id="dynamicFilters" class="filters-row"></div>
     </div>
 
@@ -142,20 +143,20 @@
           </div>
 
           <div class="breakdown-area">
-            <div class="filter-group" style="min-width:120px;">
+            <div class="filter-group" style="min-width:220px;">
               <span>Phân tích theo trường</span>
               <div class="filter-wrapper">
                 <select id="breakdownField" class="filter-select">
-                  <option value="none">Chọn trường hiển thị biểu đồ pie </option>
+                  <option value="none">Chọn trường để phân tích</option>
                 </select>
                 <i class="fa-solid fa-chevron-down"></i>
               </div>
             </div>
-            <div class="small"></div>
+            <div class="small">Chọn trường để hiển thị biểu đồ pie phân bố giá trị (áp dụng bộ lọc hiện hành).</div>
           </div>
 
           <div style="margin-top:12px;">
-            <canvas id="breakdownPie" height="110"></canvas>
+            <canvas id="breakdownPie" height="160"></canvas>
           </div>
         </div>
       </div>
@@ -168,7 +169,7 @@
               <div class="card-subtitle">Áp dụng đầy đủ bộ lọc năm, tháng và cột động</div>
             </div>
           </div>
-          <canvas id="pieChart" height="110"></canvas>
+          <canvas id="pieChart" height="220"></canvas>
           <div class="card-footer">
             <div id="pieFooterText" class="mini-tag">QLKT vs Trình VB vs Nghiệm thu NB</div>
           </div>
@@ -316,6 +317,18 @@
     }
   };
 
+  // ====== Các trường cần loại bỏ khỏi dynamic filters (user yêu cầu) ======
+  const EXCLUDE_DYNAMIC_FILTER_KEYS = new Set([
+    "Ngày",
+    "Lãnh đạo ký",
+    "Về việc",
+    "Tóm tắt nội dung và kiến nghị giải quyết",
+    "Cơ sở ban hành văn bản",
+    "Nhân viên soạn thảo văn bản",
+    "NV soạn thảo",
+    "ID"
+  ]);
+
   // ====== FETCH GViz ======
   async function fetchSheetJSON(sheetName) {
     const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
@@ -329,7 +342,7 @@
 
   // ====== PARSE GViz TABLE ======
   function parseTable(gvizJson) {
-    const cols = (gvizJson.table?.cols || []).map(c => c.label || c.id);
+    const cols = (gvizJson.table?.cols || []).map(c => (c.label || c.id || "").toString().trim());
     const rows = gvizJson.table?.rows || [];
     return rows.map(r => {
       const obj = {};
@@ -339,13 +352,6 @@
           val = null;
         } else if (cell.v !== undefined) {
           val = cell.v;
-          // Nếu là Date object, kiểm tra năm hợp lệ
-          if (val instanceof Date) {
-            const y = val.getFullYear();
-            if (y < 1900 || y > 2100) {
-              val = null;
-            }
-          }
         } else if (cell.f !== undefined) {
           val = cell.f;
         } else {
@@ -360,34 +366,18 @@
   // ====== NGÀY/THÁNG/NĂM ======
   function parseDateString(s) {
     if (s === null || s === undefined) return null;
-    if (s instanceof Date) {
-      const y = s.getFullYear();
-      if (y < 1900 || y > 2100) return null;
-      return { day: s.getDate(), month: s.getMonth() + 1, year: y };
-    }
+    if (s instanceof Date) return { day: s.getDate(), month: s.getMonth() + 1, year: s.getFullYear() };
     const str = String(s).trim();
-    // GViz: Date(YYYY,MM,DD)
     let m = str.match(/Date\((\d{4}),\s*(\d{1,2}),\s*(\d{1,2})\)/);
-    if (m) {
-      const year = +m[1], month = +m[2] + 1, day = +m[3];
-      if (year < 1900 || year > 2100) return null;
-      return { year, month, day };
-    }
+    if (m) return { year: +m[1], month: +m[2] + 1, day: +m[3] };
     m = str.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/); if (m) return { day:+m[1], month:+m[2], year:+m[3] };
     m = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/); if (m) return { year:+m[1], month:+m[2], day:+m[3] };
     m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); if (m) return { month:+m[1], day:+m[2], year:+m[3] };
-
-    // Số serial Excel/Google
     if (!isNaN(Number(str))) {
       const serial = Number(str);
-      // only convert reasonable serials (avoid tiny numbers that map to 1899)
       if (serial > 59) {
         const date = new Date(Math.round((serial - 25569) * 86400 * 1000));
-        const y = date.getUTCFullYear();
-        if (y < 1900 || y > 2100) return null;
-        return { day: date.getUTCDate(), month: date.getUTCMonth() + 1, year: y };
-      } else {
-        return null;
+        return { day: date.getUTCDate(), month: date.getUTCMonth() + 1, year: date.getUTCFullYear() };
       }
     }
     return null;
@@ -428,25 +418,24 @@
 
   // ====== Kiểm tra hàng có dữ liệu thực sự ======
   function rowHasMeaningfulData(row) {
-    // Consider a row meaningful if at least one cell has non-empty value (not whitespace)
-    // and not an obviously invalid year (1899 etc).
     for (const v of Object.values(row)) {
       if (v === null || v === undefined) continue;
       const s = String(v).trim();
       if (s === "") continue;
-      // exclude common invalid year artifact
       if (s === "1899" || s === "1899-12-31") continue;
       return true;
     }
     return false;
   }
 
-  // ====== DYNAMIC FILTERS ======
+  // ====== DYNAMIC FILTERS (bỏ các trường trong EXCLUDE_DYNAMIC_FILTER_KEYS) ======
   function buildDynamicFilters(schema, data) {
     dynamicFilters.innerHTML = "";
     if (!schema || !schema.filters) return;
     schema.filters.forEach(f => {
-      if (f.key === "Year") return;
+      // Skip Year and any excluded keys
+      if (f.key === "Year" || EXCLUDE_DYNAMIC_FILTER_KEYS.has(f.key)) return;
+
       const group = document.createElement("div");
       group.className = "filter-group";
       const label = document.createElement("span");
@@ -526,7 +515,6 @@
 
   // ====== KPI ======
   function renderKPIData(filtered) {
-    // Tổng số bản ghi: chỉ tính những hàng có dữ liệu thực sự
     const total = filtered.filter(r => rowHasMeaningfulData(r)).length;
 
     const percentKeys = ["Đánh giá tỉ lệ hoàn thành công việc", "Tỉ lệ hoàn thành"];
@@ -668,7 +656,7 @@
     const dynamicKeys = [];
     const schema = TYPE_SCHEMAS[dataTypeFilter.value];
     if (schema && schema.filters) {
-      schema.filters.forEach(f => { if (f.key !== "Year" && !available.includes(f.key)) dynamicKeys.push(f.key); });
+      schema.filters.forEach(f => { if (f.key !== "Year" && !available.includes(f.key) && !EXCLUDE_DYNAMIC_FILTER_KEYS.has(f.key)) dynamicKeys.push(f.key); });
     }
     dynamicKeys.forEach(k => { if (!available.includes(k)) available.push(k); });
 
@@ -893,7 +881,10 @@
   // ====== EVENTS ======
   document.addEventListener("DOMContentLoaded", () => {
     loadAllDataAndInit();
-    dataTypeFilter.addEventListener("change", updateDashboard);
+    dataTypeFilter.addEventListener("change", () => {
+      // reset dynamic filters selection when switching type
+      updateDashboard();
+    });
     yearFilter.addEventListener("change", updateDashboard);
     monthFilter.addEventListener("change", updateDashboard);
     totalMonthlyToggle.addEventListener("change", updateDashboard);
