@@ -47,7 +47,7 @@
     .kpi-chip.warning { border-color: rgba(250, 204, 21, 0.5); color: var(--warning); background: rgba(250, 204, 21, 0.08); }
     .kpi-chip.negative { border-color: rgba(248, 113, 113, 0.5); color: var(--danger); background: rgba(248, 113, 113, 0.08); }
     .table-wrapper { margin-top: 8px; border-radius: var(--radius-md); border: 1px solid var(--border); overflow: hidden; }
-    .table-header-row, .table-row { display: grid; grid-template-columns: var(--cols); font-size: 12px; padding: 6px 10px; align-items: center; }
+    .table-header-row, .table-row { display: grid; grid-template-columns: var(--cols); font-size: 12px; padding: 6px 10px; align-items: center; gap: 8px; }
     .table-header-row { background: var(--bg-soft); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
     .table-body { max-height: 260px; overflow-y: auto; }
     .mini-tag { font-size: 10px; color: var(--muted); padding: 2px 6px; border-radius: 999px; background: rgba(15, 23, 42, 0.9); border: 1px dashed rgba(148, 163, 184, 0.4); }
@@ -55,6 +55,7 @@
     .error { color: var(--danger); font-size: 12px; margin-top: 6px; }
     .toggle { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
     .toggle input { width: 16px; height: 16px; }
+    .card-footer { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:10px; color:var(--muted); font-size:12px; }
   </style>
 </head>
 <body>
@@ -156,7 +157,7 @@
           </div>
           <canvas id="pieChart" height="220"></canvas>
           <div class="card-footer">
-            <div class="mini-tag">QLKT vs Trình VB vs Nghiệm thu NB</div>
+            <div id="pieFooterText" class="mini-tag">QLKT vs Trình VB vs Nghiệm thu NB</div>
           </div>
         </div>
       </div>
@@ -174,8 +175,10 @@
         <div id="tableHeader" class="table-header-row" style="--cols: 2fr 1fr 1fr 1fr 1fr;"></div>
         <div class="table-body" id="tableBody"></div>
       </div>
-      <div class="card-footer">
-        <div>Dữ liệu QLKT.</div>
+
+      <!-- Footer hiển thị có điều kiện -->
+      <div id="cardFooter" class="card-footer" style="display:none;">
+        <div id="footerText"></div>
         <div class="mini-tag">Nguồn: P.QLKT</div>
       </div>
     </div>
@@ -199,6 +202,8 @@
   const loadingKpi   = document.getElementById("loadingKpi");
   const errorBox     = document.getElementById("errorBox");
   const totalMonthlyToggle = document.getElementById("totalMonthlyToggle");
+  const cardFooter = document.getElementById("cardFooter");
+  const footerText = document.getElementById("footerText");
 
   let dataQLKT = [], dataTRINH_VB = [], dataNGHIEM_THU_NB = [];
   let chart, pie;
@@ -310,47 +315,104 @@
     return JSON.parse(raw.substring(start, end + 1));
   }
 
+  // ====== PARSE GViz TABLE ======
   function parseTable(gvizJson) {
     const cols = (gvizJson.table?.cols || []).map(c => c.label || c.id);
     const rows = gvizJson.table?.rows || [];
     return rows.map(r => {
       const obj = {};
-      (r.c || []).forEach((cell, idx) => { obj[cols[idx] || `col${idx}`] = cell ? cell.v : null; });
+      (r.c || []).forEach((cell, idx) => {
+        let val = null;
+        if (!cell) {
+          val = null;
+        } else if (cell.v !== undefined) {
+          val = cell.v;
+        } else if (cell.f !== undefined) {
+          val = cell.f;
+        } else {
+          val = null;
+        }
+        obj[cols[idx] || `col${idx}`] = val;
+      });
       return obj;
     });
   }
 
   // ====== TIỆN ÍCH NGÀY/THÁNG/NĂM ======
   function parseDateString(s) {
-    if (!s && s !== 0) return null;
+    if (s === null || s === undefined) return null;
+
+    // Nếu là Date object
+    if (s instanceof Date) {
+      return { day: s.getDate(), month: s.getMonth() + 1, year: s.getFullYear() };
+    }
+
     const str = String(s).trim();
-    let m = str.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/); if (m) return { day:+m[1], month:+m[2], year:+m[3] };
+
+    // GViz đôi khi trả chuỗi dạng Date(2024,0,15)
+    let m = str.match(/Date\((\d{4}),\s*(\d{1,2}),\s*(\d{1,2})\)/);
+    if (m) return { year: +m[1], month: +m[2] + 1, day: +m[3] };
+
+    // Các định dạng phổ biến
+    m = str.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/); if (m) return { day:+m[1], month:+m[2], year:+m[3] };
     m = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/); if (m) return { year:+m[1], month:+m[2], day:+m[3] };
     m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); if (m) return { month:+m[1], day:+m[2], year:+m[3] };
+
+    // Nếu là số serial Excel/Google (ví dụ "44927")
     if (!isNaN(Number(str))) {
       const serial = Number(str);
-      const date = new Date(Math.round((serial - 25569) * 86400 * 1000));
-      return { day: date.getUTCDate(), month: date.getUTCMonth() + 1, year: date.getUTCFullYear() };
+      // reasonable range check
+      if (serial > 59) { // Excel serial > 59 safe conversion
+        const date = new Date(Math.round((serial - 25569) * 86400 * 1000));
+        return { day: date.getUTCDate(), month: date.getUTCMonth() + 1, year: date.getUTCFullYear() };
+      }
+    }
+
+    return null;
+  }
+
+  function getMonth(row) {
+    const keys = ["Ngày", "Ngay", "Date", "date", "Ngày ký", "Ngày nghiệm thu", "Ngay ky", "Ngay nghiem thu"];
+    for (const k of keys) {
+      if (row[k] !== undefined && row[k] !== null && row[k] !== "") {
+        const d = parseDateString(row[k]);
+        if (d?.month >= 1 && d.month <= 12) return d.month;
+      }
+    }
+    // Nếu có cột Month riêng
+    if (row.Month) {
+      const m = Number(row.Month);
+      if (!isNaN(m) && m >= 1 && m <= 12) return m;
     }
     return null;
   }
-  function getMonth(row) {
-    const keys = ["Ngày", "Ngay", "Date", "date", "Ngày ký", "Ngày nghiệm thu"];
-    for (const k of keys) { if (row[k]) { const d = parseDateString(row[k]); if (d?.month >= 1 && d.month <= 12) return d.month; } }
-    return null;
-  }
+
   function getYear(row) {
     const yearKeys = ["Year", "Năm", "Nam", "year", "YEAR"];
-    for (const k of yearKeys) { if (row[k]) { const y = Number(row[k]); if (!isNaN(y) && y >= 2000 && y <= 2100) return y; } }
+    for (const k of yearKeys) {
+      if (row[k] !== undefined && row[k] !== null && row[k] !== "") {
+        const y = Number(row[k]);
+        if (!isNaN(y) && y >= 1900 && y <= 2100) return y;
+      }
+    }
+    // fallback: try parse from date-like fields
     const dateKeys = ["Ngày", "Ngay", "Date", "date", "Ngày ký", "Ngày nghiệm thu"];
-    for (const k of dateKeys) { if (row[k]) { const d = parseDateString(row[k]); if (d?.year) return d.year; } }
+    for (const k of dateKeys) {
+      if (row[k] !== undefined && row[k] !== null && row[k] !== "") {
+        const d = parseDateString(row[k]);
+        if (d?.year) return d.year;
+      }
+    }
     return null;
   }
 
   // ====== BỘ LỌC DROPDOWN TỪ DỮ LIỆU ======
   function buildDynamicFilters(schema, data) {
     dynamicFilters.innerHTML = "";
+    if (!schema || !schema.filters) return;
     schema.filters.forEach(f => {
+      // Nếu chỉ có Year filter for TONG_CONG, skip building many selects
+      if (f.key === "Year" && data.length === 0) return;
       const group = document.createElement("div");
       group.className = "filter-group";
       const label = document.createElement("span");
@@ -366,7 +428,7 @@
       const values = new Set();
       data.forEach(row => {
         const val = row[f.key];
-        if (val !== null && val !== undefined && val !== "") values.add(String(val));
+        if (val !== null && val !== undefined && String(val).trim() !== "") values.add(String(val));
       });
       Array.from(values).sort().forEach(v => {
         const opt = document.createElement("option");
@@ -404,7 +466,11 @@
       const key = el.dataset.key;
       const val = el.value;
       if (!key) return;
-      if (val !== "all") filtered = filtered.filter(r => String(r[key]) === String(val));
+      if (val !== "all") filtered = filtered.filter(r => {
+        // Nếu dataset không có cột này, bỏ qua cột đó
+        if (!(key in r)) return true;
+        return String(r[key]) === String(val);
+      });
     });
 
     return filtered;
@@ -417,7 +483,6 @@
       const key = el.dataset.key;
       const val = el.value;
       if (!key || val === "all") continue;
-      // Nếu dataset không có cột này, bỏ qua cột đó
       if (!(key in row)) continue;
       if (String(row[key]) !== String(val)) return false;
     }
@@ -478,7 +543,6 @@
         const y = getYear(r), m = getMonth(r);
         if (yearFilter.value !== "all" && String(y) !== String(yearFilter.value)) return false;
         if (monthFilter.value !== "all" && String(m) !== String(monthFilter.value)) return false;
-        // Áp dụng bộ lọc cột động nếu cột tồn tại
         return rowPassesDynamicFilters(r);
       });
     } else {
@@ -515,7 +579,6 @@
 
   // ====== BIỂU ĐỒ PIE PHÂN BỐ THEO LOẠI (áp dụng cả bộ lọc cột động) ======
   function renderPieChart() {
-    // Hàm filter chung áp dụng năm/tháng + cột động (bỏ qua cột không tồn tại)
     const filterWithAllControls = ds => ds.filter(r => {
       const y = getYear(r), m = getMonth(r);
       if (yearFilter.value !== "all" && String(y) !== String(yearFilter.value)) return false;
@@ -605,79 +668,87 @@
     dataQLKT.forEach(r => add(getYear(r), "QLKT_Count"));
     dataTRINH_VB.forEach(r => add(getYear(r), "TRINH_VB_Count"));
     dataNGHIEM_THU_NB.forEach(r => add(getYear(r), "NGHIEM_THU_NB_Count"));
-    return Array.from(allYears.values()).sort((a,b)=>a.Year-b.Year);
+    // Convert map to sorted array by Year descending
+    return Array.from(allYears.values()).sort((a,b) => Number(b.Year) - Number(a.Year));
   }
 
-  // ====== CẬP NHẬT DASHBOARD ======
-  function updateDashboard() {
-    const typeKey = dataTypeFilter.value;
-    const schema = TYPE_SCHEMAS[typeKey];
+  // ====== Populate yearFilter chỉ với năm có dữ liệu ======
+  function populateYearFilter() {
+    const years = new Set();
+    [dataQLKT, dataTRINH_VB, dataNGHIEM_THU_NB].forEach(ds => {
+      ds.forEach(r => {
+        const y = getYear(r);
+        if (y) years.add(String(y));
+      });
+    });
+    const arr = Array.from(years).map(Number).filter(n => !isNaN(n)).sort((a,b)=>a-b);
+    yearFilter.innerHTML = `<option value="all">Tất cả</option>` + arr.map(y => `<option value="${y}">${y}</option>`).join("");
+  }
 
+  // ====== Hàm cập nhật dashboard chung ======
+  function updateDashboard() {
+    errorBox.style.display = "none";
+    loadingKpi.style.display = "none";
+
+    const schema = TYPE_SCHEMAS[dataTypeFilter.value];
     let sourceData;
-    if (typeKey === "QLKT") sourceData = dataQLKT;
-    else if (typeKey === "TRINH_VB") sourceData = dataTRINH_VB;
-    else if (typeKey === "NGHIEM_THU_NB") sourceData = dataNGHIEM_THU_NB;
+    if (dataTypeFilter.value === "QLKT") sourceData = dataQLKT;
+    else if (dataTypeFilter.value === "TRINH_VB") sourceData = dataTRINH_VB;
+    else if (dataTypeFilter.value === "NGHIEM_THU_NB") sourceData = dataNGHIEM_THU_NB;
     else sourceData = [...dataQLKT, ...dataTRINH_VB, ...dataNGHIEM_THU_NB];
 
+    // Build dynamic filters from the currently selected dataset (so options match type)
+    buildDynamicFilters(schema, sourceData);
+
+    // Áp dụng bộ lọc
     const filtered = applyFiltersToData(sourceData, schema);
 
+    // Render KPI, charts, table
     renderKPIData(filtered);
     renderChart(filtered);
     renderPieChart();
     renderTable(schema, filtered);
-    loadingKpi.style.display = "none";
+
+    // Footer hiển thị có điều kiện
+    if (dataTypeFilter.value === "QLKT") {
+      footerText.textContent = "Dữ liệu QLKT.";
+      cardFooter.style.display = "flex";
+    } else {
+      cardFooter.style.display = "none";
+    }
   }
 
-  // ====== KHỞI TẠO NĂM ======
-  function initYearOptions(allDataSets) {
-    const years = new Set();
-    allDataSets.forEach(ds => ds.forEach(r => { const y = getYear(r); if (y) years.add(y); }));
-    yearFilter.innerHTML = `<option value="all">Tất cả</option>` + Array.from(years).sort((a,b)=>a-b).map(y => `<option value="${y}">${y}</option>`).join("");
-  }
-
-  // ====== KHỞI TẠO ======
-  async function init() {
+  // ====== Load data và init ======
+  async function loadAllDataAndInit() {
     try {
-      loadingKpi.textContent = "Đang tải dữ liệu từ 3 bảng Google Sheets...";
-      const [duAnJson, trinhKyJson, nghiemThuJson] = await Promise.all([
+      loadingKpi.style.display = "block";
+      const [g1, g2, g3] = await Promise.all([
         fetchSheetJSON(SHEET_NAME_DUAN),
         fetchSheetJSON(SHEET_NAME_TRINHKY),
         fetchSheetJSON(SHEET_NAME_NGHIEMTHU)
       ]);
+      dataQLKT = parseTable(g1);
+      dataTRINH_VB = parseTable(g2);
+      dataNGHIEM_THU_NB = parseTable(g3);
 
-      dataQLKT         = parseTable(duAnJson);
-      dataTRINH_VB     = parseTable(trinhKyJson);
-      dataNGHIEM_THU_NB= parseTable(nghiemThuJson);
-
-      initYearOptions([dataQLKT, dataTRINH_VB, dataNGHIEM_THU_NB]);
-
-      buildDynamicFilters(TYPE_SCHEMAS[dataTypeFilter.value], dataQLKT);
-
-      dataTypeFilter.addEventListener("change", () => {
-        const typeKey = dataTypeFilter.value;
-        const schema = TYPE_SCHEMAS[typeKey];
-        const src = typeKey === "QLKT" ? dataQLKT
-                  : typeKey === "TRINH_VB" ? dataTRINH_VB
-                  : typeKey === "NGHIEM_THU_NB" ? dataNGHIEM_THU_NB
-                  : [...dataQLKT, ...dataTRINH_VB, ...dataNGHIEM_THU_NB];
-        buildDynamicFilters(schema, src);
-        updateDashboard();
-      });
-
-      yearFilter.addEventListener("change", updateDashboard);
-      monthFilter.addEventListener("change", updateDashboard);
-      totalMonthlyToggle.addEventListener("change", updateDashboard);
-
+      populateYearFilter();
       updateDashboard();
     } catch (err) {
       loadingKpi.style.display = "none";
       errorBox.style.display = "block";
-      errorBox.textContent = "Lỗi khi tải dữ liệu từ Google Sheets. Kiểm tra quyền chia sẻ (public) và tên sheet.";
+      errorBox.textContent = "Lỗi khi tải dữ liệu: " + err.message;
       console.error(err);
     }
   }
 
-  init();
+  // ====== Event listeners ======
+  document.addEventListener("DOMContentLoaded", () => {
+    loadAllDataAndInit();
+    dataTypeFilter.addEventListener("change", updateDashboard);
+    yearFilter.addEventListener("change", updateDashboard);
+    monthFilter.addEventListener("change", updateDashboard);
+    totalMonthlyToggle.addEventListener("change", updateDashboard);
+  });
 </script>
 </body>
 </html>
