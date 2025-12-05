@@ -33,7 +33,7 @@ body
    --border-width: 1px;
    --color: #333333;
    --icon-color: #444444;
-   --colorize: invert(26%) sepia(1%) saturate(1353%) hue-rotate(332deg) brightness(95%) contrast(93%);
+   --colorize: invert(21%) sepia(8%) saturate(13%) hue-rotate(334deg) brightness(96%) contrast(80%);
 }
 .wb-theme-button, .wb-theme-static
 {
@@ -95,7 +95,7 @@ body
    --border-width: 1px;
    --color: #CCCCCC;
    --icon-color: #3370B7;
-   --colorize: invert(42%) sepia(10%) saturate(5561%) hue-rotate(180deg) brightness(87%) contrast(80%);
+   --colorize: invert(40%) sepia(100%) saturate(338%) hue-rotate(170deg) brightness(87%) contrast(100%);
 }
 .darktheme .wb-theme-button, .darktheme .wb-theme-static
 {
@@ -132,6 +132,116 @@ body
    --border-color: #2E6DA4;
    --border-width: 1px;
    --color: #FFFFFF;
+}
+#wb_LayoutGrid5
+{
+   clear: both;
+   position: relative;
+   table-layout: fixed;
+   display: table;
+   text-align: center;
+   width: 100%;
+   background-color: #FFFFFF;
+   background-image: none;
+   border: 1px solid #DDDDDD;
+   border-radius: 0px;
+   box-sizing: border-box;
+   margin: 0;
+}
+#LayoutGrid5
+{
+   box-sizing: border-box;
+   padding: 0 15px 0 15px;
+   margin-right: auto;
+   margin-left: auto;
+}
+#LayoutGrid5 > .row
+{
+   margin-right: -15px;
+   margin-left: -15px;
+}
+#LayoutGrid5 > .row > .col-1, #LayoutGrid5 > .row > .col-2, #LayoutGrid5 > .row > .col-3
+{
+   box-sizing: border-box;
+   font-size: 0;
+   min-height: 1px;
+   padding-right: 15px;
+   padding-left: 15px;
+   position: relative;
+}
+#LayoutGrid5 > .row > .col-1, #LayoutGrid5 > .row > .col-2, #LayoutGrid5 > .row > .col-3
+{
+   float: left;
+}
+#LayoutGrid5 > .row > .col-1
+{
+   background-color: transparent;
+   background-image: none;
+   border: 0px solid #FFFFFF;
+   border-radius: 0px;
+   width: 8.33333333%;
+   text-align: center;
+}
+#LayoutGrid5 > .row > .col-2
+{
+   background-color: transparent;
+   background-image: none;
+   border: 0px solid #FFFFFF;
+   border-radius: 0px;
+   width: 83.33333333%;
+   text-align: center;
+}
+#LayoutGrid5 > .row > .col-3
+{
+   background-color: transparent;
+   background-image: none;
+   border: 0px solid #FFFFFF;
+   border-radius: 0px;
+   width: 8.33333333%;
+   text-align: left;
+}
+#LayoutGrid5:before,
+#LayoutGrid5:after,
+#LayoutGrid5 .row:before,
+#LayoutGrid5 .row:after
+{
+   display: table;
+   content: " ";
+}
+#LayoutGrid5:after,
+#LayoutGrid5 .row:after
+{
+   clear: both;
+}
+@media (max-width: 2050px)
+{
+#LayoutGrid5 > .row > .col-1, #LayoutGrid5 > .row > .col-2, #LayoutGrid5 > .row > .col-3
+{
+   float: none;
+   width: 100% !important;
+}
+}
+#Banner4
+{
+   background-color: transparent;
+   background-image: none;
+   border: 1px solid transparent;
+   border-radius: 0px;
+   color: #FF5500;
+   font-family: Arial;
+   font-weight: bold;
+   font-style: normal;
+   font-size: 19px;
+   text-decoration: none;
+   text-align: left;
+   text-shadow: 1px 1px 0px rgba(255,255,255,1.00);
+   margin: 0;
+}
+#Banner4 span
+{
+   display: block;
+   height: 19px;
+   margin: 23px 0 0 0 ;
 }
 .DropdownMenu1 .nav
 {
@@ -679,7 +789,7 @@ body
    background-color: transparent;
    background-image: url('images/cosmic%2dbackground%2dwith%2ddark%2dlight%2dblue%2dlaser%2dlights%2dperfect%2ddigital%2dwallpaper_181624%2d23690.jpg');
    background-repeat: repeat;
-   background-position: center center;
+   background-position: left top;
    background-size: cover;
    border: 0px solid #CCCCCC;
    border-radius: 0px;
@@ -692,7 +802,6 @@ body
    padding: 50px 15px 50px 15px;
    margin-right: auto;
    margin-left: auto;
-   max-width: 1200px;
 }
 #LayoutGrid1 > .row
 {
@@ -864,28 +973,6 @@ body
    margin: 0;
    box-sizing: border-box;
    width: 100%;
-}
-#Banner1
-{
-   background-color: transparent;
-   background-image: none;
-   border: 1px solid transparent;
-   border-radius: 0px;
-   color: #FF5500;
-   font-family: Arial;
-   font-weight: bold;
-   font-style: normal;
-   font-size: 24px;
-   text-decoration: none;
-   text-align: left;
-   text-shadow: 1px 1px 0px rgba(255,255,255,1.00);
-   margin: 0;
-}
-#Banner1 span
-{
-   display: block;
-   height: 24px;
-   margin: 48px 0 0 15px;
 }
 #wb_InlineFrame1
 {
