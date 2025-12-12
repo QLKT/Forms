@@ -12,7 +12,7 @@
       --bg: #0f172a; --bg-soft: #111827; --card: #020617;
       --accent: #38bdf8; --text: #e5e7eb; --muted: #9ca3af; --border: #1f2937;
       --radius-lg: 16px; --radius-md: 10px;
-      --label-font-size: 12px; /* chuẩn hóa kích thước chữ cho labels/legend/ticks */
+      --label-font-size: 11px; /* Đã chuẩn hóa font size theo yêu cầu */
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif; background: radial-gradient(circle at top left, #1d283a, #020617 60%); color: var(--text); padding: 20px; }
@@ -27,7 +27,7 @@
     .filter-wrapper { position: relative; display: inline-block; }
     .filter-select { background: var(--bg-soft); border-radius: 999px; border: 1px solid var(--border); color: var(--text); padding: 6px 26px 6px 10px; font-size: 13px; outline: none; min-width: 160px; appearance: none; }
     .filter-wrapper i { position: absolute; right: 9px; top: 50%; transform: translateY(-50%); font-size: 11px; color: var(--muted); pointer-events: none; }
-    .grid { display: grid; grid-template-columns: 1fr; gap: 16px; } /* single column layout */
+    .grid { display: grid; grid-template-columns: 1fr; gap: 16px; } 
     .card { background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.05), var(--card)); border-radius: var(--radius-lg); border: 1px solid rgba(148, 163, 184, 0.15); box-shadow: 0 18px 45px rgba(15, 23, 42, 0.9); padding: 14px 16px; }
     .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 6px; }
     .card-title { font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
@@ -51,15 +51,10 @@
     .card-footer { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:10px; color:var(--muted); font-size:12px; }
     .breakdown-area { margin-top: 12px; display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
     .small { font-size:12px; color:var(--muted); }
-
-    /* Ẩn khu vực dynamic filters hoàn toàn */
     #dynamicFilters { display: none !important; }
-
-    /* Container cho hai pie charts ngang hàng */
     .pies-row { display:flex; gap:12px; margin-top:12px; }
     .pie-card { flex:1; background: linear-gradient(135deg, rgba(15,23,42,0.95), rgba(15,23,42,0.9)); border-radius: 12px; padding: 12px; border:1px solid rgba(148,163,184,0.08); }
     .pie-card .card-title { font-size:13px; margin-bottom:8px; }
-    /* Chuẩn hóa font cho legend/labels thông qua CSS fallback (Chart.js options sẽ áp dụng) */
     canvas { max-width:100%; }
   </style>
 </head>
@@ -75,7 +70,6 @@
       <span class="pill">QLKT DASHBOARD</span>
     </div>
 
-    <!-- FILTERS (dynamicFilters bị ẩn) -->
     <div class="filters">
       <div class="filters-row">
         <div class="filter-group">
@@ -142,13 +136,14 @@
             <div class="card-title"><i class="fa-solid fa-chart-column"></i> Biểu đồ theo tháng/năm</div>
             <span class="mini-tag">Số lượng bản ghi theo tháng trong năm đang lọc</span>
           </div>
+          <!-- Canvas height auto-adjusted by Chart.js but setting min height ensures visibility -->
           <canvas id="monthChart" height="200"></canvas>
           <div class="card-footer">
             <div>Đơn vị: số bản ghi / tháng</div>
           </div>
         </div>
 
-        <!-- Hai pie charts đặt dưới biểu đồ tháng/năm, bằng nhau -->
+        <!-- Hai pie charts -->
         <div class="pies-row">
           <div class="pie-card">
             <div class="card-title"><i class="fa-solid fa-chart-pie"></i> Phân bố theo loại dữ liệu</div>
@@ -205,7 +200,7 @@
   const dataTypeFilter = document.getElementById("dataTypeFilter");
   const yearFilter   = document.getElementById("yearFilter");
   const monthFilter  = document.getElementById("monthFilter");
-  const dynamicFilters = document.getElementById("dynamicFilters"); // hidden
+  const dynamicFilters = document.getElementById("dynamicFilters"); 
   const kpiGrid      = document.getElementById("kpiGrid");
   const tableHeader  = document.getElementById("tableHeader");
   const tableBody    = document.getElementById("tableBody");
@@ -219,7 +214,13 @@
   let dataQLKT = [], dataTRINH_VB = [], dataNGHIEM_THU_NB = [];
   let chart, pie, breakdownChart;
 
-  // ====== SCHEMA (giữ nguyên) ======
+  // ====== PALETTE MÀU CHO 12 THÁNG ======
+  const MONTH_PALETTE = [
+    "#38bdf8", "#60a5fa", "#818cf8", "#a78bfa", "#c084fc", "#e879f9", 
+    "#f472b6", "#fb7185", "#f87171", "#fb923c", "#fbbf24", "#34d399"
+  ];
+
+  // ====== SCHEMA ======
   const TYPE_SCHEMAS = {
     QLKT: { label: "QLKT", filters: [ { key: "Ngày" }, { key: "Chuyên viên phụ trách" }, { key: "Đơn vị thực hiện" }, { key: "Tên dự án" }, { key: "Chủ nhiệm" }, { key: "Mục đích trình" }, { key: "ID" }, { key: "Year" } ], tableCols: [ { key: "Ngày", label: "Ngày", width: "1.2fr" }, { key: "Chuyên viên phụ trách", label: "Chuyên viên", width: "1.2fr" }, { key: "Đơn vị thực hiện", label: "Đơn vị thực hiện", width: "1.2fr" }, { key: "Tên dự án", label: "Tên dự án", width: "2fr" }, { key: "Chủ nhiệm", label: "Chủ nhiệm", width: "1fr" }, { key: "Mục đích trình", label: "Mục đích trình", width: "1.4fr" }, { key: "ID", label: "ID", width: "0.8fr" }, { key: "Year", label: "Year", width: "0.8fr" } ] },
     TRINH_VB: { label: "Trình VB", filters: [ { key: "Ngày" }, { key: "Lãnh đạo ký" }, { key: "Về việc" }, { key: "Ý kiến chỉ đạo" }, { key: "Tóm tắt nội dung và kiến nghị giải quyết" }, { key: "Cơ sở ban hành văn bản" }, { key: "Nhân viên soạn thảo văn bản" }, { key: "ID" }, { key: "Year" } ], tableCols: [ { key: "Ngày", label: "Ngày", width: "1.2fr" }, { key: "Lãnh đạo ký", label: "Lãnh đạo ký", width: "1.2fr" }, { key: "Về việc", label: "Về việc", width: "1.6fr" }, { key: "Ý kiến chỉ đạo", label: "Ý kiến chỉ đạo", width: "1.6fr" }, { key: "Tóm tắt nội dung và kiến nghị giải quyết", label: "Tóm tắt & Kiến nghị", width: "2fr" }, { key: "Cơ sở ban hành văn bản", label: "Cơ sở ban hành", width: "1.4fr" }, { key: "Nhân viên soạn thảo văn bản", label: "NV soạn thảo", width: "1.2fr" }, { key: "ID", label: "ID", width: "0.8fr" }, { key: "Year", label: "Year", width: "0.8fr" } ] },
@@ -238,7 +239,6 @@
     return JSON.parse(raw.substring(start, end + 1));
   }
 
-  // ====== PARSE GViz TABLE ======
   function parseTable(gvizJson) {
     const cols = (gvizJson.table?.cols || []).map(c => (c.label || c.id || "").toString().trim());
     const rows = gvizJson.table?.rows || [];
@@ -246,15 +246,8 @@
       const obj = {};
       (r.c || []).forEach((cell, idx) => {
         let val = null;
-        if (!cell) {
-          val = null;
-        } else if (cell.v !== undefined) {
-          val = cell.v;
-        } else if (cell.f !== undefined) {
-          val = cell.f;
-        } else {
-          val = null;
-        }
+        if (cell && cell.v !== undefined) val = cell.v;
+        else if (cell && cell.f !== undefined) val = cell.f;
         obj[cols[idx] || `col${idx}`] = val;
       });
       return obj;
@@ -273,6 +266,7 @@
     m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); if (m) return { month:+m[1], day:+m[2], year:+m[3] };
     if (!isNaN(Number(str))) {
       const serial = Number(str);
+      // Serial 0-60 corresponds to around 1900. 1899 date checks handled in validation.
       if (serial > 59) {
         const date = new Date(Math.round((serial - 25569) * 86400 * 1000));
         return { day: date.getUTCDate(), month: date.getUTCMonth() + 1, year: date.getUTCFullYear() };
@@ -314,26 +308,24 @@
     return null;
   }
 
-  // ====== Kiểm tra hàng có dữ liệu thực sự ======
+  // ====== KIỂM TRA DỮ LIỆU HỢP LỆ (Đã sửa logic) ======
   function rowHasMeaningfulData(row) {
     for (const v of Object.values(row)) {
       if (v === null || v === undefined) continue;
       const s = String(v).trim();
       if (s === "") continue;
-      if (s === "1899" || s === "1899-12-31") continue;
+      // Bỏ qua các giá trị ngày mặc định của Google Sheets (1899)
+      if (s.includes("1899-12") || s === "1899") continue; 
       return true;
     }
     return false;
   }
 
-  // ====== buildDynamicFilters: NO-OP vì user yêu cầu ẩn hoàn toàn ======
   function buildDynamicFilters(schema, data) {
-    // intentionally do nothing — dynamic filters are hidden/disabled
     dynamicFilters.innerHTML = "";
     return;
   }
 
-  // ====== APPLY FILTERS ======
   function applyFiltersToData(data, schema) {
     const year = yearFilter.value;
     const month = monthFilter.value;
@@ -345,8 +337,6 @@
       if (month !== "all" && String(m) !== String(month)) return false;
       return true;
     });
-
-    // No dynamic filters to apply (they are disabled)
     return filtered;
   }
 
@@ -391,15 +381,24 @@
     `;
   }
 
-  // ====== CHART OPTIONS CHUNG (chuẩn hóa font size cho legend/labels/ticks) ======
+  // ====== CHART OPTIONS CHUNG (Updated Font 11) ======
   const COMMON_CHART_OPTIONS = {
     plugins: {
-      legend: { labels: { color: "#9ca3af", font: { size: 12 } } },
-      tooltip: { bodyFont: { size: 12 }, titleFont: { size: 12 } }
+      legend: { 
+        labels: { 
+          color: "#9ca3af", 
+          font: { size: 11 }, // Yêu cầu 1: Font size chuẩn hóa 11
+          boxWidth: 12        // Yêu cầu 1: Box width nhỏ
+        } 
+      },
+      tooltip: { 
+        bodyFont: { size: 11 }, 
+        titleFont: { size: 11 } 
+      }
     }
   };
 
-  // ====== MONTH CHART ======
+  // ====== MONTH CHART (Horizontal, Colored) ======
   function renderChart(filtered) {
     const months = Array.from({ length: 12 }, (_, i) => i + 1);
 
@@ -423,31 +422,39 @@
     chart = new Chart(ctx, {
       type: "bar",
       data: {
-        labels: months.map(m => m.toString().padStart(2, "0")),
+        labels: months.map(m => "T" + m.toString().padStart(2, "0")),
         datasets: [{
-          label: `Bản ghi theo tháng ${yearFilter.value === "all" ? "(tất cả năm)" : "năm " + yearFilter.value}`,
-          data,
-          backgroundColor: "rgba(56, 189, 248, 0.85)",
-          borderRadius: 6,
-          barPercentage: 0.65,
-          categoryPercentage: 0.5
+          label: `Số bản ghi`,
+          data: data,
+          backgroundColor: MONTH_PALETTE, // Yêu cầu: Mỗi tháng 1 màu
+          borderRadius: 4,
+          barPercentage: 0.7,
+          categoryPercentage: 0.8
         }]
       },
       options: {
+        indexAxis: 'y', // Yêu cầu: Hiển thị ngang
         responsive: true,
         plugins: {
           legend: { display: false },
-          tooltip: { callbacks: { label: ctx => `Số lượng: ${ctx.parsed.y}` }, bodyFont: { size: 12 }, titleFont: { size: 12 } }
+          tooltip: { callbacks: { label: ctx => `Số lượng: ${ctx.parsed.x}` }, bodyFont: { size: 11 }, titleFont: { size: 11 } }
         },
         scales: {
-          x: { grid: { display: false }, ticks: { color: "#9ca3af", font: { size: 12 } } },
-          y: { beginAtZero: true, grid: { color: "rgba(55, 65, 81, 0.6)" }, ticks: { color: "#9ca3af", stepSize: 1, font: { size: 12 } } }
+          y: { 
+            grid: { display: false }, 
+            ticks: { color: "#9ca3af", font: { size: 11 } } 
+          },
+          x: { 
+            beginAtZero: true, 
+            grid: { color: "rgba(55, 65, 81, 0.6)" }, 
+            ticks: { color: "#9ca3af", stepSize: 1, font: { size: 11 } } 
+          }
         }
       }
     });
   }
 
-  // ====== PIE THEO LOẠI ======
+  // ====== PIE CHART ======
   function renderPieChart() {
     const filterWithAllControls = ds => ds.filter(r => {
       const y = getYear(r), m = getMonth(r);
@@ -476,14 +483,17 @@
       options: Object.assign({}, COMMON_CHART_OPTIONS, {
         responsive: true,
         plugins: {
-          legend: { position: "bottom", labels: { color: "#9ca3af", font: { size: 12 } } },
-          tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.parsed}` }, bodyFont: { size: 12 }, titleFont: { size: 12 } }
+          legend: { 
+            position: "bottom", 
+            labels: { color: "#9ca3af", font: { size: 11 }, boxWidth: 12 } 
+          },
+          tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.parsed}` }, bodyFont: { size: 11 }, titleFont: { size: 11 } }
         }
       })
     });
   }
 
-  // ====== BREAKDOWN PIE ======
+  // ====== BREAKDOWN PIE (Dropdown populate logic fixed) ======
   function populateBreakdownOptions() {
     const candidateFields = [
       "Chuyên viên phụ trách", "Đơn vị thực hiện", "Chủ nhiệm", "Mục đích trình",
@@ -498,11 +508,18 @@
     else if (dataTypeFilter.value === "NGHIEM_THU_NB") sourceData = dataNGHIEM_THU_NB;
     else sourceData = [...dataQLKT, ...dataTRINH_VB, ...dataNGHIEM_THU_NB];
 
-    const available = candidateFields.filter(f => sourceData.some(r => r[f] !== undefined && r[f] !== null && String(r[f]).trim() !== ""));
+    // Yêu cầu: Chỉ populate các trường có dữ liệu thực
+    const available = candidateFields.filter(f => {
+      // Kiểm tra xem trường f có ít nhất 1 hàng có dữ liệu hợp lệ không
+      return sourceData.some(r => {
+         const val = r[f];
+         return val !== undefined && val !== null && String(val).trim() !== "";
+      });
+    });
+
     breakdownField.innerHTML = `<option value="none">Chọn trường để phân tích</option>` +
       available.map(k => `<option value="${encodeURIComponent(k)}">${k}</option>`).join("");
 
-    // reset selection
     breakdownField.value = "none";
     if (breakdownChart) { breakdownChart.destroy(); breakdownChart = null; }
   }
@@ -545,7 +562,11 @@
       data.push(others.reduce((s,i)=>s+i[1],0));
     }
 
-    const colors = ["#60a5fa","#34d399","#fbbf24","#f87171","#a78bfa","#fb7185","#60a5fa","#34d399","#fbbf24","#f97316","#94a3b8"];
+    // Palette mở rộng cho nhiều category
+    const colors = [
+      "#38bdf8", "#34d399", "#fbbf24", "#f87171", "#a78bfa", 
+      "#fb7185", "#60a5fa", "#e879f9", "#f97316", "#94a3b8", "#4ade80"
+    ];
 
     const ctx = document.getElementById("breakdownPie").getContext("2d");
     if (breakdownChart) breakdownChart.destroy();
@@ -555,8 +576,11 @@
       options: Object.assign({}, COMMON_CHART_OPTIONS, {
         responsive: true,
         plugins: {
-          legend: { position: "bottom", labels: { color: "#9ca3af", font: { size: 12 } } },
-          tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.parsed}` }, bodyFont: { size: 12 }, titleFont: { size: 12 } }
+          legend: { 
+            position: "bottom", 
+            labels: { color: "#9ca3af", font: { size: 11 }, boxWidth: 12 } 
+          },
+          tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.parsed}` }, bodyFont: { size: 11 }, titleFont: { size: 11 } }
         }
       })
     });
@@ -599,7 +623,6 @@
   }
   function safe(v) { return (v === null || v === undefined) ? "" : String(v); }
 
-  // ====== AGGREGATE ======
   function aggregateYearCounts() {
     const allYears = new Map();
     const add = (year, key) => {
@@ -609,13 +632,12 @@
       o[key] += 1;
       o.TOTAL_Count += 1;
     };
-    dataQLKT.forEach(r => { const y = getYear(r); if (y) add(y, "QLKT_Count"); });
-    dataTRINH_VB.forEach(r => { const y = getYear(r); if (y) add(y, "TRINH_VB_Count"); });
-    dataNGHIEM_THU_NB.forEach(r => { const y = getYear(r); if (y) add(y, "NGHIEM_THU_NB_Count"); });
+    dataQLKT.forEach(r => { const y = getYear(r); if (y && rowHasMeaningfulData(r)) add(y, "QLKT_Count"); });
+    dataTRINH_VB.forEach(r => { const y = getYear(r); if (y && rowHasMeaningfulData(r)) add(y, "TRINH_VB_Count"); });
+    dataNGHIEM_THU_NB.forEach(r => { const y = getYear(r); if (y && rowHasMeaningfulData(r)) add(y, "NGHIEM_THU_NB_Count"); });
     return Array.from(allYears.values()).sort((a,b) => Number(b.Year) - Number(a.Year));
   }
 
-  // ====== POPULATE YEAR ======
   function populateYearFilter() {
     const years = new Set();
     [dataQLKT, dataTRINH_VB, dataNGHIEM_THU_NB].forEach(ds => {
@@ -628,7 +650,6 @@
     yearFilter.innerHTML = `<option value="all">Tất cả</option>` + arr.map(y => `<option value="${y}">${y}</option>`).join("");
   }
 
-  // ====== UPDATE DASHBOARD ======
   function updateDashboard() {
     errorBox.style.display = "none";
     loadingKpi.style.display = "none";
@@ -640,7 +661,6 @@
     else if (dataTypeFilter.value === "NGHIEM_THU_NB") sourceData = dataNGHIEM_THU_NB;
     else sourceData = [...dataQLKT, ...dataTRINH_VB, ...dataNGHIEM_THU_NB];
 
-    // dynamic filters disabled
     buildDynamicFilters(schema, sourceData);
 
     const filtered = applyFiltersToData(sourceData, schema);
@@ -661,7 +681,6 @@
     renderBreakdownPie(breakdownField.value || "none");
   }
 
-  // ====== LOAD DATA ======
   async function loadAllDataAndInit() {
     try {
       loadingKpi.style.display = "block";
@@ -684,7 +703,6 @@
     }
   }
 
-  // ====== EVENTS ======
   document.addEventListener("DOMContentLoaded", () => {
     loadAllDataAndInit();
     dataTypeFilter.addEventListener("change", () => { updateDashboard(); });
