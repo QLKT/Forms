@@ -12,7 +12,7 @@
       --bg: #0f172a; --bg-soft: #111827; --card: #020617;
       --accent: #38bdf8; --text: #e5e7eb; --muted: #9ca3af; --border: #1f2937;
       --radius-lg: 16px; --radius-md: 10px;
-      --label-font-size: 11px; /* Đã chuẩn hóa font size theo yêu cầu */
+      --label-font-size: 11px;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif; background: radial-gradient(circle at top left, #1d283a, #020617 60%); color: var(--text); padding: 20px; }
@@ -136,8 +136,8 @@
             <div class="card-title"><i class="fa-solid fa-chart-column"></i> Biểu đồ theo tháng/năm</div>
             <span class="mini-tag">Số lượng bản ghi theo tháng trong năm đang lọc</span>
           </div>
-          <!-- Canvas height auto-adjusted by Chart.js but setting min height ensures visibility -->
-          <canvas id="monthChart" height="200"></canvas>
+          <!-- Chiều cao 50% so với bản gốc (100px) -->
+          <canvas id="monthChart" height="80"></canvas>
           <div class="card-footer">
             <div>Đơn vị: số bản ghi / tháng</div>
           </div>
@@ -214,7 +214,6 @@
   let dataQLKT = [], dataTRINH_VB = [], dataNGHIEM_THU_NB = [];
   let chart, pie, breakdownChart;
 
-  // ====== PALETTE MÀU CHO 12 THÁNG ======
   const MONTH_PALETTE = [
     "#38bdf8", "#60a5fa", "#818cf8", "#a78bfa", "#c084fc", "#e879f9", 
     "#f472b6", "#fb7185", "#f87171", "#fb923c", "#fbbf24", "#34d399"
@@ -266,7 +265,6 @@
     m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); if (m) return { month:+m[1], day:+m[2], year:+m[3] };
     if (!isNaN(Number(str))) {
       const serial = Number(str);
-      // Serial 0-60 corresponds to around 1900. 1899 date checks handled in validation.
       if (serial > 59) {
         const date = new Date(Math.round((serial - 25569) * 86400 * 1000));
         return { day: date.getUTCDate(), month: date.getUTCMonth() + 1, year: date.getUTCFullYear() };
@@ -308,13 +306,12 @@
     return null;
   }
 
-  // ====== KIỂM TRA DỮ LIỆU HỢP LỆ (Đã sửa logic) ======
+  // ====== CHECK DỮ LIỆU ======
   function rowHasMeaningfulData(row) {
     for (const v of Object.values(row)) {
       if (v === null || v === undefined) continue;
       const s = String(v).trim();
       if (s === "") continue;
-      // Bỏ qua các giá trị ngày mặc định của Google Sheets (1899)
       if (s.includes("1899-12") || s === "1899") continue; 
       return true;
     }
@@ -381,14 +378,13 @@
     `;
   }
 
-  // ====== CHART OPTIONS CHUNG (Updated Font 11) ======
   const COMMON_CHART_OPTIONS = {
     plugins: {
       legend: { 
         labels: { 
           color: "#9ca3af", 
-          font: { size: 11 }, // Yêu cầu 1: Font size chuẩn hóa 11
-          boxWidth: 12        // Yêu cầu 1: Box width nhỏ
+          font: { size: 11 },
+          boxWidth: 12
         } 
       },
       tooltip: { 
@@ -398,7 +394,7 @@
     }
   };
 
-  // ====== MONTH CHART (Horizontal, Colored) ======
+  // ====== MONTH CHART ======
   function renderChart(filtered) {
     const months = Array.from({ length: 12 }, (_, i) => i + 1);
 
@@ -426,14 +422,14 @@
         datasets: [{
           label: `Số bản ghi`,
           data: data,
-          backgroundColor: MONTH_PALETTE, // Yêu cầu: Mỗi tháng 1 màu
+          backgroundColor: MONTH_PALETTE,
           borderRadius: 4,
           barPercentage: 0.7,
           categoryPercentage: 0.8
         }]
       },
       options: {
-        indexAxis: 'y', // Yêu cầu: Hiển thị ngang
+        indexAxis: 'y',
         responsive: true,
         plugins: {
           legend: { display: false },
@@ -493,7 +489,7 @@
     });
   }
 
-  // ====== BREAKDOWN PIE (Dropdown populate logic fixed) ======
+  // ====== BREAKDOWN PIE (UPDATED) ======
   function populateBreakdownOptions() {
     const candidateFields = [
       "Chuyên viên phụ trách", "Đơn vị thực hiện", "Chủ nhiệm", "Mục đích trình",
@@ -508,9 +504,7 @@
     else if (dataTypeFilter.value === "NGHIEM_THU_NB") sourceData = dataNGHIEM_THU_NB;
     else sourceData = [...dataQLKT, ...dataTRINH_VB, ...dataNGHIEM_THU_NB];
 
-    // Yêu cầu: Chỉ populate các trường có dữ liệu thực
     const available = candidateFields.filter(f => {
-      // Kiểm tra xem trường f có ít nhất 1 hàng có dữ liệu hợp lệ không
       return sourceData.some(r => {
          const val = r[f];
          return val !== undefined && val !== null && String(val).trim() !== "";
@@ -531,6 +525,9 @@
     }
     const fieldKey = decodeURIComponent(fieldKeyEncoded);
 
+    // Danh sách các trường cần format %
+    const percentFields = ["Đánh giá tỉ lệ hoàn thành công việc", "Tỉ lệ hoàn thành", "Tỉ lệ thanh lý"];
+
     let sourceData;
     if (dataTypeFilter.value === "QLKT") sourceData = dataQLKT;
     else if (dataTypeFilter.value === "TRINH_VB") sourceData = dataTRINH_VB;
@@ -542,7 +539,22 @@
     const counts = new Map();
     filtered.forEach(r => {
       let v = (fieldKey in r) ? r[fieldKey] : null;
-      if (v === null || v === undefined || String(v).trim() === "") v = "(Trống)";
+      if (v === null || v === undefined || String(v).trim() === "") return;
+
+      // Xử lý chuyển đổi 0.3 -> 30%
+      if (percentFields.includes(fieldKey)) {
+          const valNum = Number(v);
+          if (!isNaN(valNum)) {
+               // Nếu số <= 1, giả định là số thập phân (0.3 -> 30%)
+               // Nếu số > 1, giả định đã là phần trăm (30 -> 30%)
+               if (valNum <= 1) {
+                   v = Math.round(valNum * 100) + "%";
+               } else {
+                   v = valNum + "%";
+               }
+          }
+      }
+
       const key = String(v);
       counts.set(key, (counts.get(key) || 0) + 1);
     });
@@ -562,7 +574,6 @@
       data.push(others.reduce((s,i)=>s+i[1],0));
     }
 
-    // Palette mở rộng cho nhiều category
     const colors = [
       "#38bdf8", "#34d399", "#fbbf24", "#f87171", "#a78bfa", 
       "#fb7185", "#60a5fa", "#e879f9", "#f97316", "#94a3b8", "#4ade80"
@@ -714,3 +725,4 @@
 </script>
 </body>
 </html>
+```
