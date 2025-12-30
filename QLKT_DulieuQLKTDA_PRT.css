@@ -927,3 +927,22 @@ body
    width: 100%;
    height: 100%;
 }
+#wb_InlineFrame2
+{
+   box-sizing: border-box;
+   border: 1px solid #DDDDDD;
+   border-radius: 0px;
+   margin: 0;
+   overflow: auto;
+   -webkit-overflow-scrolling: touch;
+   position: relative;
+}
+#InlineFrame2
+{
+   border-width: 0;
+   position: absolute;
+   left: 0;
+   top: 0;
+   width: 100%;
+   height: 100%;
+}

@@ -31,4 +31,8 @@
       {
          return true;
       });
+      $("#LayoutGrid2").submit(function(event)
+      {
+         return true;
+      });
    });
