@@ -2,75 +2,60 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <title>Hệ thống Thống kê Tổng hợp dữ liệu P.QLKT</title>
+  <title>Thống kê Tổng hợp Dữ liệu QLKT</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
-      --bg: #f1f5f9; --card: #ffffff; --accent: #0f172a; --blue: #0284c7; --border: #e2e8f0;
-      --text: #1e293b; --muted: #64748b; --radius: 12px;
+      --bg: #f8fafc; --card: #ffffff; --accent: #0284c7; --text: #1e293b; --muted: #64748b; --border: #e2e8f0;
+      --radius-lg: 12px; --radius-md: 8px;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
-    .container { max-width: 1440px; margin: 0 auto; }
+    body { font-family: "Inter", sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; }
+    .dashboard { max-width: 1440px; margin: 0 auto; }
     
-    /* Header & Filter UI */
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .header h1 { font-size: 22px; font-weight: 800; color: var(--accent); }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    .header h1 { font-size: 24px; font-weight: 700; color: #0f172a; }
+
+    .filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; background: var(--card); padding: 16px; border-radius: var(--radius-lg); border: 1px solid var(--border); margin-bottom: 20px; }
+    .filter-group { display: flex; flex-direction: column; gap: 6px; }
+    .filter-group label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; }
+    .filter-select { background: #f1f5f9; border-radius: 8px; border: 1px solid var(--border); padding: 8px; font-size: 14px; outline: none; }
+
+    /* Layout biểu đồ chia đôi */
+    .charts-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+    @media (max-width: 1024px) { .charts-container { grid-template-columns: 1fr; } }
     
-    .filters-bar { background: var(--card); padding: 16px; border-radius: var(--radius); border: 1px solid var(--border); display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-    .filter-item { display: flex; flex-direction: column; gap: 6px; }
-    .filter-item label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; }
-    .filter-item select { padding: 9px 12px; border-radius: 8px; border: 1px solid var(--border); background: #f8fafc; font-size: 13px; color: var(--text); outline: none; cursor: pointer; }
+    .card { background: var(--card); border-radius: var(--radius-lg); border: 1px solid var(--border); padding: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+    .card-title { font-size: 16px; font-weight: 600; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
 
-    /* Cards & Stats */
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px; margin-bottom: 20px; }
-    .stat-card { background: var(--card); padding: 20px; border-radius: var(--radius); border: 1px solid var(--border); }
-    .stat-card span { font-size: 12px; color: var(--muted); font-weight: 600; }
-    .stat-card div { font-size: 26px; font-weight: 800; color: var(--blue); margin-top: 5px; }
-
-    /* Charts Row */
-    .charts-row { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 20px; }
-    @media (max-width: 1024px) { .charts-row { grid-template-columns: 1fr; } }
-    .chart-box { background: var(--card); padding: 20px; border-radius: var(--radius); border: 1px solid var(--border); min-height: 350px; }
-    .chart-title { font-size: 15px; font-weight: 700; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
-
-    /* Table UI */
-    .table-card { background: var(--card); border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; }
-    .table-container { width: 100%; overflow-x: auto; }
+    /* Table */
+    .table-container { background: var(--card); border-radius: var(--radius-lg); border: 1px solid var(--border); overflow: hidden; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    th { background: #f8fafc; padding: 12px 15px; text-align: left; color: var(--muted); font-weight: 600; border-bottom: 2px solid var(--border); white-space: nowrap; }
-    td { padding: 12px 15px; border-bottom: 1px solid var(--border); }
-    tr:hover { background: #f1f5f9; }
+    th { background: #f1f5f9; padding: 12px; text-align: left; font-weight: 600; color: var(--muted); border-bottom: 2px solid var(--border); }
+    td { padding: 12px; border-bottom: 1px solid var(--border); }
+    tr:hover { background-color: #f8fafc; }
 
-    .pagination { padding: 15px; display: flex; justify-content: center; align-items: center; gap: 15px; background: #fff; }
-    .pg-btn { padding: 6px 15px; border: 1px solid var(--border); background: #fff; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; }
-    .pg-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .pagination { display: flex; justify-content: center; align-items: center; gap: 15px; padding: 15px; background: #fff; }
+    .pg-btn { padding: 6px 12px; border: 1px solid var(--border); background: white; border-radius: 6px; cursor: pointer; }
+    .pg-btn:disabled { opacity: 0.5; }
 
-    #loader { position: fixed; inset: 0; background: rgba(255,255,255,0.9); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; }
-    .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--blue); border-radius: 50%; animation: spin 0.8s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    #loading { text-align: center; padding: 50px; font-weight: 600; color: var(--accent); }
   </style>
 </head>
 <body>
 
-<div id="loader">
-  <div class="spinner"></div>
-  <p style="margin-top:15px; font-weight:600; color:var(--muted)">Đang khởi tạo dữ liệu...</p>
-</div>
-
-<div class="container">
+<div class="dashboard">
   <div class="header">
-    <h1><i class="fa-solid fa-chart-pie"></i> DASHBOARD TỔNG HỢP</h1>
-    <div style="font-size: 12px; font-weight: 600; color: var(--muted);" id="lastUpdate">(C) Copyright P.QLKT 2026</div>
+    <h1><i class="fa-solid fa-chart-column"></i> THỐNG KÊ TỔNG HỢP QLKT</h1>
   </div>
 
-  <div class="filters-bar">
-    <div class="filter-item">
+  <div class="filters">
+    <div class="filter-group">
       <label>Loại dữ liệu</label>
-      <select id="typeFilter">
+      <select id="dataType" class="filter-select">
         <option value="ALL">--- TẤT CẢ DỮ LIỆU ---</option>
         <option value="QLKT">Dữ liệu Dự án QLKT</option>
         <option value="TRINH_VB">Văn bản Trình ký</option>
@@ -78,212 +63,174 @@
         <option value="NHAN_TRA">Nhận - Trả Hồ sơ</option>
       </select>
     </div>
-    <div class="filter-item">
-      <label>Năm báo cáo</label>
-      <select id="yearFilter"><option value="all">Tất cả các năm</option></select>
+    <div class="filter-group">
+      <label>Năm</label>
+      <select id="yearFilter" class="filter-select"><option value="all">Tất cả các năm</option></select>
     </div>
-    <div class="filter-item">
-      <label>Phân tích theo trường</label>
-      <select id="fieldFilter"></select>
-    </div>
-  </div>
-
-  <div class="stats-grid" id="statsGrid"></div>
-
-  <div class="charts-row">
-    <div class="chart-box">
-      <div class="chart-title"><i class="fa-solid fa-chart-line"></i> Tần suất dữ liệu theo tháng</div>
-      <canvas id="barChart"></canvas>
-    </div>
-    <div class="chart-box">
-      <div class="chart-title"><i class="fa-solid fa-chart-pie"></i> Phân bổ tỷ lệ</div>
-      <canvas id="pieChart"></canvas>
+    <div class="filter-group">
+      <label>Thống kê theo trường</label>
+      <select id="fieldFilter" class="filter-select"></select>
     </div>
   </div>
 
-  <div class="table-card">
+  <div id="loading"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu từ Google Sheets...</div>
+
+  <div id="content" style="display:none;">
+    <div class="charts-container">
+      <div class="card">
+        <div class="card-title"><i class="fa-solid fa-chart-bar"></i> Số lượng</div>
+        <canvas id="barChart" height="250"></canvas>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="fa-solid fa-chart-pie"></i> Tỷ trọng</div>
+        <canvas id="pieChart" height="250"></canvas>
+      </div>
+    </div>
+
     <div class="table-container">
       <table>
-        <thead><tr id="tHead"></tr></thead>
-        <tbody id="tBody"></tbody>
+        <thead><tr id="tableHead"></tr></thead>
+        <tbody id="tableBody"></tbody>
       </table>
-    </div>
-    <div class="pagination">
-      <button class="pg-btn" id="pPrev"><i class="fa-solid fa-chevron-left"></i></button>
-      <span id="pInfo" style="font-weight:600; font-size:13px">Trang 1</span>
-      <button class="pg-btn" id="pNext"><i class="fa-solid fa-chevron-right"></i></button>
+      <div class="pagination">
+        <button class="pg-btn" id="prevBtn"><i class="fa-solid fa-chevron-left"></i></button>
+        <span id="pageInfo">Trang 1</span>
+        <button class="pg-btn" id="nextBtn"><i class="fa-solid fa-chevron-right"></i></button>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
-  const SS_A = "12VZMuTxWo1o44zYpX2llB2BSGbEgn4nQldCKRUbdmeQ";
-  const SS_B = "1nxlqtzGM8eXao25nodxwKr6Cu70BiFJNW12b06zF1d4";
+  // Cấu hình ID gốc
+  const ID_1 = "12VZMuTxWo1o44zYpX2llB2BSGbEgn4nQldCKRUbdmeQ";
+  const ID_2 = "1nxlqtzGM8eXao25nodxwKr6Cu70BiFJNW12b06zF1d4";
 
-  const CONFIG = {
-    QLKT: { id: SS_A, sheet: "QLKT Data Sort", cols: ["Ngày", "Chuyên viên phụ trách", "Đơn vị thực hiện", "Tên dự án", "Chủ nhiệm"] },
-    TRINH_VB: { id: SS_A, sheet: "QLKT Trình ký Sort", cols: ["Ngày", "Lãnh đạo ký", "Về việc", "Ý kiến chỉ đạo", "Nhân viên soạn thảo văn bản"] },
-    NGHIEM_THU: { id: SS_A, sheet: "QLKT Nghiệm thu nội bộ Sort", cols: ["Ngày", "Đơn vị thực hiện", "Số Hợp đồng", "Tên Hợp đồng", "Tình hình thực hiện"] },
-    NHAN_TRA: { id: SS_B, sheet: "Nhan-Tra HS trinh ky", cols: ["Ngày", "Đơn vị thực hiện", "Nội dung hồ sơ", "Người bàn giao", "Người nhận HS", "Ngày trả HS", "Trạng thái"] }
+  const SCHEMAS = {
+    QLKT: { id: ID_1, sheet: "QLKT Data Sort", cols: ["Ngày", "Chuyên viên phụ trách", "Đơn vị thực hiện", "Tên dự án", "Chủ nhiệm"] },
+    TRINH_VB: { id: ID_1, sheet: "QLKT Trình ký Sort", cols: ["Ngày", "Lãnh đạo ký", "Về việc", "Ý kiến chỉ đạo", "Nhân viên soạn thảo văn bản"] },
+    NGHIEM_THU: { id: ID_1, sheet: "QLKT Nghiệm thu nội bộ Sort", cols: ["Ngày", "Đơn vị thực hiện", "Số Hợp đồng", "Tên Hợp đồng", "Tình hình thực hiện"] },
+    NHAN_TRA: { id: ID_2, sheet: "Nhan-Tra HS trinh ky", cols: ["Ngày", "Đơn vị thực hiện", "Nội dung hồ sơ", "Người bàn giao", "Người nhận HS", "Trạng thái"] }
   };
 
-  const FIELD_MAP = [
-    "Chuyên viên phụ trách", "Đơn vị thực hiện", "Chủ nhiệm", "Lãnh đạo ký", "Ý kiến chỉ đạo", 
-    "Tình hình thực hiện", "Đợt Tiền về", "Đề nghị Thanh toán", "Người nhận HS", "Trạng thái"
-  ];
-
   let store = { QLKT: [], TRINH_VB: [], NGHIEM_THU: [], NHAN_TRA: [], ALL: [] };
-  let currentFiltered = [];
+  let currentRows = [];
   let page = 1;
-  const pageSize = 10;
-  let charts = { bar: null, pie: null };
+  const size = 10;
+  let chartB = null, chartP = null;
 
-  async function fetchSheet(key) {
-    try {
-      const url = `https://docs.google.com/spreadsheets/d/${CONFIG[key].id}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG[key].sheet)}`;
-      const res = await fetch(url);
-      const text = await res.text();
-      const json = JSON.parse(text.substring(47, text.length - 2));
-      const headers = json.table.cols.map(c => c.label || "").filter(h => h !== "");
-      
-      return json.table.rows.map(r => {
-        let row = {};
-        r.c.forEach((cell, i) => { if(json.table.cols[i].label) row[json.table.cols[i].label] = cell ? (cell.f || cell.v) : ""; });
-        return row;
-      }).filter(r => {
-        const d = String(r["Ngày"] || "");
-        return d && !d.includes("1899") && Object.values(r).some(v => v !== "");
-      });
-    } catch (e) { return []; }
+  async function loadData(key) {
+    const url = `https://docs.google.com/spreadsheets/d/${SCHEMAS[key].id}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SCHEMAS[key].sheet)}`;
+    const res = await fetch(url);
+    const text = await res.text();
+    const json = JSON.parse(text.substring(47, text.length - 2));
+    const labels = json.table.cols.map(c => c.label || "");
+    
+    return json.table.rows.map(r => {
+      let o = {};
+      r.c.forEach((cell, i) => { if(labels[i]) o[labels[i]] = cell ? (cell.f || cell.v) : ""; });
+      return o;
+    }).filter(r => r["Ngày"] && !String(r["Ngày"]).includes("1899"));
   }
 
   function getYear(d) { const m = String(d).match(/\d{4}/); return m ? m[0] : null; }
-  function getMonth(d) { const p = String(d).split(/[\/\-]/); return p.length > 1 ? parseInt(p[1]) : null; }
 
-  function updateFieldOptions() {
-    const type = document.getElementById("typeFilter").value;
-    const select = document.getElementById("fieldFilter");
-    select.innerHTML = "";
+  function updateFieldFilter() {
+    const type = document.getElementById("dataType").value;
+    const fSel = document.getElementById("fieldFilter");
+    fSel.innerHTML = "";
     
-    let available = [];
     if(type === "ALL") {
-      available = ["Đơn vị thực hiện", "Ngày"];
+      fSel.add(new Option("Loại dữ liệu", "type"));
+      fSel.add(new Option("Đơn vị thực hiện", "Đơn vị thực hiện"));
     } else {
-      const sample = store[type][0] || {};
-      available = FIELD_MAP.filter(f => f in sample);
+      SCHEMAS[type].cols.forEach(c => { if(c !== "Ngày") fSel.add(new Option(c, c)); });
     }
-    available.forEach(f => select.add(new Option(f, f)));
   }
 
   function refresh() {
-    const type = document.getElementById("typeFilter").value;
+    const type = document.getElementById("dataType").value;
     const year = document.getElementById("yearFilter").value;
     const field = document.getElementById("fieldFilter").value;
 
-    currentFiltered = store[type].filter(d => {
-      if(year === "all") return true;
-      return getYear(d["Ngày"]) === year;
+    currentRows = store[type].filter(r => year === "all" || getYear(r["Ngày"]) === year);
+
+    // Render Charts
+    const counts = {};
+    currentRows.forEach(r => {
+      let val = (field === "type") ? r._tName : (r[field] || "Trống");
+      counts[val] = (counts[val] || 0) + 1;
     });
 
-    renderStats();
-    renderCharts(field);
+    const labels = Object.keys(counts);
+    const data = Object.values(counts);
+
+    if(chartB) chartB.destroy();
+    if(chartP) chartP.destroy();
+
+    const colors = ['#0284c7', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#64748b'];
+
+    chartB = new Chart(document.getElementById("barChart"), {
+      type: 'bar',
+      data: { labels, datasets: [{ label: 'Số lượng', data, backgroundColor: colors }] },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+
+    chartP = new Chart(document.getElementById("pieChart"), {
+      type: 'pie',
+      data: { labels, datasets: [{ data, backgroundColor: colors }] },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+
     renderTable();
   }
 
-  function renderStats() {
-    const grid = document.getElementById("statsGrid");
-    const units = new Set(currentFiltered.map(d => d["Đơn vị thực hiện"]).filter(u => u));
-    grid.innerHTML = `
-      <div class="stat-card"><span>Tổng số</span><div>${currentFiltered.length}</div></div>
-      <div class="stat-card"><span>Đơn vị thực hiện</span><div>${units.size}</div></div>
-      <div class="stat-card"><span>Năm thống kê</span><div>${document.getElementById("yearFilter").value.toUpperCase()}</div></div>
-    `;
-  }
-
-  function renderCharts(field) {
-    const ctxB = document.getElementById("barChart").getContext("2d");
-    const ctxP = document.getElementById("pieChart").getContext("2d");
-
-    const mData = Array(12).fill(0);
-    const fCounts = {};
-
-    currentFiltered.forEach(d => {
-      const m = getMonth(d["Ngày"]); if(m) mData[m-1]++;
-      const fVal = d[field] || "Chưa xác định";
-      fCounts[fVal] = (fCounts[fVal] || 0) + 1;
-    });
-
-    if(charts.bar) charts.bar.destroy();
-    const grad = ctxB.createLinearGradient(0, 0, 0, 400);
-    grad.addColorStop(0, '#0284c7'); grad.addColorStop(1, '#818cf8');
-
-    charts.bar = new Chart(ctxB, {
-      type: 'bar',
-      data: {
-        labels: Array.from({length:12}, (_,i)=>`T${i+1}`),
-        datasets: [{ label: 'Số lượng', data: mData, backgroundColor: grad, borderRadius: 6 }]
-      },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: {display:false} } }
-    });
-
-    const pLabels = Object.keys(fCounts).sort((a,b)=>fCounts[b]-fCounts[a]).slice(0, 8);
-    if(charts.pie) charts.pie.destroy();
-    charts.pie = new Chart(ctxP, {
-      type: 'doughnut',
-      data: {
-        labels: pLabels,
-        datasets: [{
-          data: pLabels.map(l => fCounts[l]),
-          backgroundColor: ['#0f172a', '#38bdf8', '#fbbf24', '#f87171', '#4ade80', '#818cf8', '#fb7185', '#94a3b8']
-        }]
-      },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, cutout: '65%' }
-    });
-  }
-
   function renderTable() {
-    const type = document.getElementById("typeFilter").value;
-    const cols = (type === "ALL") ? ["Ngày", "Loại", "Đơn vị thực hiện", "Nội dung/Tên dự án"] : CONFIG[type].cols;
+    const type = document.getElementById("dataType").value;
+    const cols = (type === "ALL") ? ["Ngày", "Nguồn", "Đơn vị thực hiện", "Nội dung chính"] : SCHEMAS[type].cols;
     
-    document.getElementById("tHead").innerHTML = cols.map(c => `<th>${c}</th>`).join("");
+    document.getElementById("tableHead").innerHTML = cols.map(c => `<th>${c}</th>`).join("");
+    const paginated = currentRows.slice((page-1)*size, page*size);
     
-    const start = (page - 1) * pageSize;
-    const paginated = currentFiltered.slice(start, start + pageSize);
-
-    document.getElementById("tBody").innerHTML = paginated.map(r => {
+    document.getElementById("tableBody").innerHTML = paginated.map(r => {
       if(type === "ALL") {
-        return `<tr><td>${r["Ngày"]}</td><td>${r._type}</td><td>${r["Đơn vị thực hiện"] || ""}</td><td>${r["Tên dự án"] || r["Về việc"] || r["Tên Hợp đồng"] || r["Nội dung hồ sơ"] || ""}</td></tr>`;
+        const content = r["Tên dự án"] || r["Về việc"] || r["Tên Hợp đồng"] || r["Nội dung hồ sơ"] || "";
+        return `<tr><td>${r["Ngày"]}</td><td>${r._tName}</td><td>${r["Đơn vị thực hiện"] || ""}</td><td>${content}</td></tr>`;
       }
       return `<tr>${cols.map(c => `<td>${r[c] || ""}</td>`).join("")}</tr>`;
     }).join("");
 
-    const total = Math.ceil(currentFiltered.length / pageSize) || 1;
-    document.getElementById("pInfo").innerText = `Trang ${page} / ${total}`;
-    document.getElementById("pPrev").disabled = page === 1;
-    document.getElementById("pNext").disabled = page >= total;
+    const total = Math.ceil(currentRows.length / size) || 1;
+    document.getElementById("pageInfo").innerText = `Trang ${page} / ${total}`;
+    document.getElementById("prevBtn").disabled = page === 1;
+    document.getElementById("nextBtn").disabled = page >= total;
   }
 
   async function init() {
-    for(let k in CONFIG) {
-      const data = await fetchSheet(k);
-      store[k] = data;
-      store.ALL = store.ALL.concat(data.map(d => ({...d, _type: k})));
+    const keys = ["QLKT", "TRINH_VB", "NGHIEM_THU", "NHAN_TRA"];
+    const names = ["Dự án QLKT", "Văn bản Trình ký", "Nghiệm thu NB", "Nhận-Trả Hồ sơ"];
+    
+    for(let i=0; i<keys.length; i++) {
+      const data = await loadData(keys[i]);
+      store[keys[i]] = data;
+      store.ALL = store.ALL.concat(data.map(d => ({...d, _tName: names[i]})));
     }
 
     const years = [...new Set(store.ALL.map(d => getYear(d["Ngày"])))].filter(y => y).sort().reverse();
     const ySel = document.getElementById("yearFilter");
     years.forEach(y => ySel.add(new Option(y, y)));
 
-    document.getElementById("loader").style.display = "none";
-    updateFieldOptions();
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("content").style.display = "block";
+    updateFieldFilter();
     refresh();
   }
 
-  document.getElementById("typeFilter").onchange = () => { page=1; updateFieldOptions(); refresh(); };
+  document.getElementById("dataType").onchange = () => { page=1; updateFieldFilter(); refresh(); };
   document.getElementById("yearFilter").onchange = () => { page=1; refresh(); };
   document.getElementById("fieldFilter").onchange = () => refresh();
-  document.getElementById("pPrev").onclick = () => { if(page>1) { page--; renderTable(); } };
-  document.getElementById("pNext").onclick = () => { page++; renderTable(); };
+  document.getElementById("prevBtn").onclick = () => { if(page>1) { page--; renderTable(); } };
+  document.getElementById("nextBtn").onclick = () => { page++; renderTable(); };
 
   init();
 </script>
