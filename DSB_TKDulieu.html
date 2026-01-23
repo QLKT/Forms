@@ -2,9 +2,9 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <title>Thống kê Tổng hợp Dữ liệu QLKT</title>
+  <title>Thống kê Tổng hợp Dữ liệu QLKT - Premium</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
@@ -14,246 +14,279 @@
       --radius-lg: 12px; --radius-md: 8px;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: "Inter", sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
-    .dashboard { max-width: 1280px; margin: 0 auto; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; gap: 16px; flex-wrap: wrap; }
-    .header-title h1 { font-size: 22px; font-weight: 600; color: #0f172a; display: flex; align-items: center; gap: 8px; }
-    .header-title span { font-size: 13px; color: var(--muted); margin-top: 4px; display: block; }
-    .pill { background: #e0f2fe; border-radius: 999px; padding: 4px 12px; font-size: 11px; color: var(--accent); border: 1px solid #bae6fd; font-weight: 500; }
+    body { font-family: "Inter", sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; line-height: 1.5; }
+    .dashboard { max-width: 1400px; margin: 0 auto; }
     
-    .filters { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 12px; }
-    .filters-row { display: flex; gap: 10px; flex-wrap: wrap; }
-    .filter-group { display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: var(--muted); }
-    .filter-wrapper { position: relative; display: inline-block; }
-    .filter-select { background: var(--bg-soft); border-radius: 6px; border: 1px solid var(--border); color: var(--text); padding: 6px 26px 6px 10px; font-size: 13px; outline: none; min-width: 180px; appearance: none; }
-    .filter-wrapper i { position: absolute; right: 9px; top: 50%; transform: translateY(-50%); font-size: 11px; color: var(--muted); pointer-events: none; }
-    
-    .grid { display: grid; grid-template-columns: 1fr; gap: 16px; } 
-    .card { background: var(--card); border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 16px; }
-    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    .card-title { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; color: #334155; }
-    
-    .kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 20px; }
-    .kpi-card { background: #f1f5f9; border-radius: var(--radius-md); padding: 12px; border: 1px solid var(--border); }
-    .kpi-label { font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: 600; }
-    .kpi-value { font-size: 20px; font-weight: 700; color: #0f172a; margin-top: 4px; }
+    /* Header */
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+    .header-title h1 { font-size: 24px; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 12px; }
+    .header-title span { font-size: 14px; color: var(--muted); margin-top: 4px; display: block; }
+    .pill { background: #e0f2fe; border-radius: 999px; padding: 6px 16px; font-size: 12px; color: var(--accent); font-weight: 600; border: 1px solid #bae6fd; }
 
-    .table-wrapper { margin-top: 8px; border-radius: var(--radius-md); border: 1px solid var(--border); overflow: hidden; }
-    .table-header-row, .table-row { display: grid; grid-template-columns: var(--cols); font-size: 12px; padding: 10px; align-items: center; gap: 8px; }
-    .table-header-row { background: #f8fafc; font-weight: 600; color: #475569; border-bottom: 1px solid var(--border); }
-    .table-row { border-bottom: 1px solid #f1f5f9; background: #fff; }
-    .table-body { max-height: 300px; overflow-y: auto; }
+    /* Filters */
+    .filters { display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; background: var(--card); padding: 16px; border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .filter-group { display: flex; flex-direction: column; gap: 6px; }
+    .filter-group span { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; }
+    .filter-select { background: #f1f5f9; border-radius: 8px; border: 1px solid var(--border); color: var(--text); padding: 8px 32px 8px 12px; font-size: 14px; outline: none; appearance: none; cursor: pointer; min-width: 180px; }
+    .filter-wrapper { position: relative; }
+    .filter-wrapper i { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 12px; color: var(--muted); pointer-events: none; }
 
-    .pies-row { display:flex; gap:16px; margin-top:16px; }
-    .pie-card { flex:1; background: #fff; border-radius: 12px; padding: 16px; border:1px solid var(--border); }
-    .loading { font-size: 13px; color: var(--accent); font-weight: 500; }
+    /* Grid & Cards */
+    .grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+    .card { background: var(--card); border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); padding: 20px; }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .card-title { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 10px; color: #0f172a; }
+
+    /* KPIs */
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .kpi-card { background: #f8fafc; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px; }
+    .kpi-label { font-size: 12px; color: var(--muted); font-weight: 600; margin-bottom: 8px; }
+    .kpi-value { font-size: 28px; font-weight: 700; color: var(--accent); }
+
+    /* Charts */
+    .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+    @media (max-width: 1024px) { .charts-row { grid-template-columns: 1fr; } }
+    
+    /* Table & Pagination */
+    .table-container { background: var(--card); border-radius: var(--radius-lg); border: 1px solid var(--border); margin-top: 20px; overflow: hidden; }
+    .table-wrapper { width: 100%; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { background: #f1f5f9; padding: 12px 16px; text-align: left; font-weight: 600; color: var(--muted); text-transform: uppercase; font-size: 11px; }
+    td { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background-color: #f8fafc; }
+
+    .pagination { display: flex; justify-content: center; align-items: center; gap: 15px; padding: 16px; background: #fff; border-top: 1px solid var(--border); }
+    .pg-btn { padding: 6px 12px; border: 1px solid var(--border); background: white; border-radius: 6px; cursor: pointer; font-size: 13px; }
+    .pg-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .pg-info { font-size: 13px; color: var(--muted); }
+
+    .loading { text-align: center; padding: 40px; color: var(--accent); font-weight: 600; }
   </style>
 </head>
 <body>
   <div class="dashboard">
     <div class="header">
       <div class="header-title">
-        <h1><i class="fa-solid fa-chart-pie"></i> Thống kê Dữ liệu QLKT</h1>
-        <span>Phòng QLKT - Cập nhật dữ liệu từ Google Sheets</span>
+        <h1><i class="fa-solid fa-chart-line"></i> THỐNG KÊ DỮ LIỆU QLKT & HỒ SƠ</h1>
+        <span>Quản lý tập trung các dự án, văn bản và nhận-trả hồ sơ trình ký.</span>
       </div>
-      <span class="pill">Cập nhật: 2025</span>
+      <span class="pill">Hệ thống Nội bộ 2026</span>
     </div>
 
     <div class="filters">
-      <div class="filters-row">
-        <div class="filter-group">
-          <span>Loại dữ liệu</span>
-          <div class="filter-wrapper">
-            <select id="dataTypeFilter" class="filter-select">
-              <option value="QLKT">QLKT (Dự án)</option>
-              <option value="TRINH_VB">Trình Văn bản</option>
-              <option value="NGHIEM_THU_NB">Nghiệm thu nội bộ</option>
-              <option value="NHAN_TRA_HS">Nhận - Trả Hồ sơ</option>
-            </select>
-            <i class="fa-solid fa-chevron-down"></i>
-          </div>
+      <div class="filter-group">
+        <span>Loại dữ liệu</span>
+        <div class="filter-wrapper">
+          <select id="dataTypeFilter" class="filter-select">
+            <option value="QLKT">Dữ liệu Dự án QLKT</option>
+            <option value="TRINH_VB">Trình Văn bản</option>
+            <option value="NGHIEM_THU_NB">Nghiệm thu Nội bộ</option>
+            <option value="NHAN_TRA_HS">Nhận-Trả HS Trình ký</option>
+          </select>
+          <i class="fa-solid fa-chevron-down"></i>
         </div>
-        <div class="filter-group">
-          <span>Năm</span>
-          <div class="filter-wrapper">
-            <select id="yearFilter" class="filter-select"><option value="all">Tất cả năm</option></select>
-            <i class="fa-solid fa-chevron-down"></i>
-          </div>
+      </div>
+      <div class="filter-group">
+        <span>Năm báo cáo</span>
+        <div class="filter-wrapper">
+          <select id="yearFilter" class="filter-select"><option value="all">Tất cả các năm</option></select>
+          <i class="fa-solid fa-chevron-down"></i>
         </div>
       </div>
     </div>
 
-    <div class="grid">
-      <div class="card">
-        <div class="kpi-grid" id="kpiGrid"></div>
-        <div class="loading" id="loadingKpi">Đang đồng bộ dữ liệu...</div>
-        
-        <div style="margin-top: 10px;">
-          <div class="card-title"><i class="fa-solid fa-chart-line"></i> Biểu đồ số lượng theo tháng</div>
-          <canvas id="monthChart" height="80"></canvas>
-        </div>
+    <div id="loading" class="loading"><i class="fas fa-spinner fa-spin"></i> Đang đồng bộ dữ liệu từ Google Sheets...</div>
 
-        <div class="pies-row">
-          <div class="pie-card">
-            <div class="card-title">Cơ cấu nguồn dữ liệu</div>
-            <canvas id="pieChart" height="150"></canvas>
-          </div>
-          <div class="pie-card">
-            <div class="card-title">Phân tích Đơn vị</div>
-            <div class="filter-wrapper" style="margin-bottom:10px;">
-                <select id="breakdownField" class="filter-select" style="width:100%"></select>
-            </div>
-            <canvas id="breakdownPie" height="150"></canvas>
-          </div>
+    <div id="mainContent" style="display:none;">
+      <div class="kpi-grid" id="kpiGrid"></div>
+
+      <div class="charts-row">
+        <div class="card">
+          <div class="card-title"><i class="fa-solid fa-chart-bar"></i> Thống kê theo Tháng</div>
+          <canvas id="monthChart" height="200"></canvas>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fa-solid fa-building"></i> Đơn vị thực hiện</div>
+          <canvas id="unitChart" height="200"></canvas>
         </div>
       </div>
-    </div>
 
-    <div class="card" style="margin-top:20px;">
-      <div class="card-title"><i class="fa-solid fa-table"></i> Danh sách chi tiết</div>
-      <div class="table-wrapper">
-        <div id="tableHeader" class="table-header-row"></div>
-        <div class="table-body" id="tableBody"></div>
+      <div class="table-container">
+        <div class="card-header" style="padding: 20px 20px 0 20px;">
+          <div class="card-title"><i class="fa-solid fa-list"></i> Chi tiết dữ liệu</div>
+        </div>
+        <div class="table-wrapper">
+          <table id="dataTable">
+            <thead><tr id="tableHead"></tr></thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+        <div class="pagination">
+          <button class="pg-btn" id="prevPage"><i class="fa-solid fa-chevron-left"></i></button>
+          <span class="pg-info" id="pageInfo">Trang 1 / 1</span>
+          <button class="pg-btn" id="nextPage"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
       </div>
     </div>
   </div>
 
 <script>
-  const SPREADSHEET_ID_1 = "12VZMuTxWo1o44zYpX2llB2BSGbEgn4nQldCKRUbdmeQ";
-  const SPREADSHEET_ID_2 = "1nxlqtzGM8eXao25nodxwKr6Cu70BiFJNW12b06zF1d4";
+  // Cấu hình Spreadsheet IDs
+  const SS_ID_1 = "12VZMuTxWo1o44zYpX2llB2BSGbEgn4nQldCKRUbdmeQ";
+  const SS_ID_2 = "1nxlqtzGM8eXao25nodxwKr6Cu70BiFJNW12b06zF1d4"; // Sheet Nhận-trả HS
 
-  const TYPE_SCHEMAS = {
-    QLKT: { sid: SPREADSHEET_ID_1, sheet: "QLKT Data Sort", tableCols: [ { key: "Ngày", label: "Ngày", width: "1fr" }, { key: "Đơn vị thực hiện", label: "Đơn vị", width: "1.5fr" }, { key: "Tên dự án", label: "Dự án", width: "2fr" }, { key: "Chuyên viên phụ trách", label: "Chuyên viên", width: "1fr" } ] },
-    TRINH_VB: { sid: SPREADSHEET_ID_1, sheet: "QLKT Trình ký Sort", tableCols: [ { key: "Ngày", label: "Ngày", width: "1fr" }, { key: "Về việc", label: "Nội dung", width: "2.5fr" }, { key: "Lãnh đạo ký", label: "Lãnh đạo", width: "1fr" } ] },
-    NGHIEM_THU_NB: { sid: SPREADSHEET_ID_1, sheet: "QLKT Nghiệm thu nội bộ Sort", tableCols: [ { key: "Ngày", label: "Ngày", width: "1fr" }, { key: "Đơn vị thực hiện", label: "Đơn vị", width: "1.5fr" }, { key: "Tên Hợp đồng", label: "Hợp đồng", width: "2fr" } ] },
-    NHAN_TRA_HS: { sid: SPREADSHEET_ID_2, sheet: "Nhan-Tra HS trinh ky", tableCols: [ { key: "Ngày nhận", label: "Ngày nhận", width: "1fr" }, { key: "Đơn vị", label: "Đơn vị", width: "1.2fr" }, { key: "Nội dung hồ sơ", label: "Nội dung", width: "2fr" }, { key: "Ngày trả", label: "Ngày trả", width: "1fr" } ] }
+  const CONFIG = {
+    QLKT: { id: SS_ID_1, sheet: "QLKT Data Sort", cols: ["Ngày", "Chuyên viên phụ trách", "Đơn vị thực hiện", "Tên dự án", "Chủ nhiệm"] },
+    TRINH_VB: { id: SS_ID_1, sheet: "QLKT Trình ký Sort", cols: ["Ngày", "Lãnh đạo ký", "Về việc", "Nhân viên soạn thảo văn bản"] },
+    NGHIEM_THU_NB: { id: SS_ID_1, sheet: "QLKT Nghiệm thu nội bộ Sort", cols: ["Ngày", "Đơn vị thực hiện", "Số Hợp đồng", "Tên Hợp đồng", "Tình hình thực hiện"] },
+    NHAN_TRA_HS: { id: SS_ID_2, sheet: "Nhan-Tra HS trinh ky", cols: ["Ngày", "Đơn vị thực hiện", "Nội dung hồ sơ", "Người bàn giao", "Trạng thái"] }
   };
 
   let store = { QLKT: [], TRINH_VB: [], NGHIEM_THU_NB: [], NHAN_TRA_HS: [] };
-  let chart, pie, breakdownChart;
+  let currentPage = 1;
+  const rowsPerPage = 10;
+  let charts = {};
 
-  async function fetchSheetJSON(sid, sheetName) {
-    const url = `https://docs.google.com/spreadsheets/d/${sid}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
+  async function fetchData(key) {
+    const url = `https://docs.google.com/spreadsheets/d/${CONFIG[key].id}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(CONFIG[key].sheet)}`;
     const res = await fetch(url);
-    const raw = await res.text();
-    const json = JSON.parse(raw.substring(47, raw.length - 2));
-    return parseTable(json);
-  }
-
-  function parseTable(gvizJson) {
-    const cols = (gvizJson.table?.cols || []).map(c => (c.label || c.id || "").toString().trim());
-    return gvizJson.table.rows.map(r => {
-      const obj = {};
-      (r.c || []).forEach((cell, idx) => { obj[cols[idx]] = cell ? cell.v : null; });
+    const text = await res.text();
+    const json = JSON.parse(text.substring(47, text.length - 2));
+    const labels = json.table.cols.map(c => c.label || "");
+    
+    return json.table.rows.map(r => {
+      let obj = {};
+      r.c.forEach((cell, i) => { if(labels[i]) obj[labels[i]] = cell ? (cell.f || cell.v) : ""; });
       return obj;
+    }).filter(row => {
+        // Lọc bỏ 1899 và dữ liệu trống
+        const dateStr = String(row["Ngày"] || "");
+        const hasData = Object.values(row).some(v => v !== "" && v !== null);
+        return hasData && !dateStr.includes("1899");
     });
   }
 
-  function rowHasData(row) {
-    return Object.values(row).some(v => v !== null && String(v).trim() !== "" && !String(v).includes("1899"));
+  function getYear(dateStr) {
+    if (!dateStr) return null;
+    const match = dateStr.match(/\d{4}/);
+    return match ? match[0] : null;
   }
 
-  function getYear(row) {
-    const val = row["Ngày"] || row["Ngày nhận"] || row["Year"];
-    if (!val) return null;
-    if (typeof val === 'number') return val > 2000 ? val : null;
-    const m = String(val).match(/\d{4}/);
-    return m ? Number(m[0]) : null;
+  function getMonth(dateStr) {
+    if (!dateStr) return null;
+    const parts = dateStr.split(/[\/\-]/);
+    return parts.length >= 2 ? parseInt(parts[1]) : null;
   }
 
-  function getMonth(row) {
-    const val = row["Ngày"] || row["Ngày nhận"];
-    if (typeof val === 'string' && val.includes('Date')) {
-        const m = val.match(/\d+/g); return m ? parseInt(m[1]) + 1 : null;
-    }
-    return null;
-  }
-
-  function updateDashboard() {
+  function updateUI() {
     const type = document.getElementById("dataTypeFilter").value;
     const year = document.getElementById("yearFilter").value;
-    const schema = TYPE_SCHEMAS[type];
     
-    let filtered = store[type].filter(rowHasData);
-    if (year !== "all") {
-        filtered = filtered.filter(r => String(getYear(r)) === year);
-    }
+    let filtered = store[type].filter(d => {
+      if (year === "all") return true;
+      return getYear(d["Ngày"]) === year;
+    });
 
-    renderKPIs(filtered, type);
-    renderMainChart(filtered);
-    renderTable(schema, filtered);
-    renderPies();
+    renderKPIs(filtered);
+    renderCharts(filtered);
+    renderTable(filtered);
   }
 
-  function renderKPIs(data, type) {
-    const kpiGrid = document.getElementById("kpiGrid");
-    kpiGrid.innerHTML = `
-      <div class="kpi-card"><div class="kpi-label">Tổng hồ sơ</div><div class="kpi-value">${data.length}</div></div>
-      <div class="kpi-card"><div class="kpi-label">Đơn vị tham gia</div><div class="kpi-value">${new Set(data.map(d => d["Đơn vị thực hiện"] || d["Đơn vị"])).size - 1}</div></div>
-      <div class="kpi-card"><div class="kpi-label">Nguồn dữ liệu</div><div class="kpi-value" style="font-size:14px">${type}</div></div>
-      <div class="kpi-card"><div class="kpi-label">Trạng thái</div><div class="kpi-value" style="color:green; font-size:14px">Hoạt động</div></div>
+  function renderKPIs(data) {
+    const grid = document.getElementById("kpiGrid");
+    grid.innerHTML = `
+      <div class="kpi-card"><div class="kpi-label">Tổng số bản ghi</div><div class="kpi-value">${data.length}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Đơn vị tham gia</div><div class="kpi-value">${new Set(data.map(d => d["Đơn vị thực hiện"])).size - (new Set(data.map(d => d["Đơn vị thực hiện"])).has("") ? 1 : 0)}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Năm đang xem</div><div class="kpi-value">${document.getElementById("yearFilter").value.replace('all','Tất cả')}</div></div>
     `;
   }
 
-  function renderMainChart(data) {
-    const months = Array(12).fill(0);
-    data.forEach(r => { const m = getMonth(r); if(m) months[m-1]++; });
-    
-    const ctx = document.getElementById("monthChart").getContext("2d");
-    if (chart) chart.destroy();
-    chart = new Chart(ctx, {
+  function renderCharts(data) {
+    const monthCounts = Array(12).fill(0);
+    const unitCounts = {};
+
+    data.forEach(d => {
+      const m = getMonth(d["Ngày"]);
+      if (m && m <= 12) monthCounts[m-1]++;
+      
+      const unit = d["Đơn vị thực hiện"] || "Không xác định";
+      unitCounts[unit] = (unitCounts[unit] || 0) + 1;
+    });
+
+    // Month Chart
+    if(charts.month) charts.month.destroy();
+    charts.month = new Chart(document.getElementById("monthChart"), {
       type: 'bar',
       data: {
-        labels: ["T1","T2","T3","T4","T5","T6","T7","T8","T9","T10","T11","T12"],
-        datasets: [{ label: 'Số lượng', data: months, backgroundColor: '#0284c7', borderRadius: 4 }]
+        labels: Array.from({length: 12}, (_, i) => `T${i+1}`),
+        datasets: [{ label: 'Số lượng', data: monthCounts, backgroundColor: '#0284c7', borderRadius: 4 }]
       },
-      options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+      options: { responsive: true, plugins: { legend: { display: false } } }
     });
-  }
 
-  function renderTable(schema, data) {
-    const head = document.getElementById("tableHeader");
-    const body = document.getElementById("tableBody");
-    const cols = schema.tableCols;
-    
-    head.style.setProperty("--cols", cols.map(c => c.width).join(" "));
-    body.style.setProperty("--cols", cols.map(c => c.width).join(" "));
-    
-    head.innerHTML = cols.map(c => `<div>${c.label}</div>`).join("");
-    body.innerHTML = data.slice(0, 50).map(r => `
-      <div class="table-row">${cols.map(c => `<div>${r[c.key] || '-'}</div>`).join("")}</div>
-    `).join("");
-  }
-
-  function renderPies() {
-    const ctx = document.getElementById("pieChart").getContext("2d");
-    if (pie) pie.destroy();
-    pie = new Chart(ctx, {
+    // Unit Chart
+    const unitLabels = Object.keys(unitCounts).slice(0, 8);
+    const unitData = unitLabels.map(l => unitCounts[l]);
+    if(charts.unit) charts.unit.destroy();
+    charts.unit = new Chart(document.getElementById("unitChart"), {
       type: 'doughnut',
       data: {
-        labels: ["QLKT", "Trình VB", "Nghiệm thu", "Nhận/Trả"],
-        datasets: [{ data: [store.QLKT.length, store.TRINH_VB.length, store.NGHIEM_THU_NB.length, store.NHAN_TRA_HS.length], backgroundColor: ['#0ea5e9', '#10b981', '#f59e0b', '#6366f1'] }]
-      }
+        labels: unitLabels,
+        datasets: [{ data: unitData, backgroundColor: ['#0284c7', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#64748b'] }]
+      },
+      options: { responsive: true, plugins: { legend: { position: 'right' } } }
     });
+  }
+
+  function renderTable(data) {
+    const type = document.getElementById("dataTypeFilter").value;
+    const cols = CONFIG[type].cols;
+    const head = document.getElementById("tableHead");
+    head.innerHTML = cols.map(c => `<th>${c}</th>`).join("");
+
+    const totalPages = Math.ceil(data.length / rowsPerPage) || 1;
+    if (currentPage > totalPages) currentPage = totalPages;
+
+    const start = (currentPage - 1) * rowsPerPage;
+    const paginatedData = data.slice(start, start + rowsPerPage);
+
+    const body = document.getElementById("tableBody");
+    body.innerHTML = paginatedData.map(row => `
+      <tr>${cols.map(c => `<td>${row[c] || '-'}</td>`).join("")}</tr>
+    `).join("");
+
+    document.getElementById("pageInfo").innerText = `Trang ${currentPage} / ${totalPages}`;
+    document.getElementById("prevPage").disabled = currentPage === 1;
+    document.getElementById("nextPage").disabled = currentPage === totalPages;
   }
 
   async function init() {
-    const years = new Set();
-    for (const type in TYPE_SCHEMAS) {
-      const data = await fetchSheetJSON(TYPE_SCHEMAS[type].sid, TYPE_SCHEMAS[type].sheet);
-      store[type] = data;
-      data.forEach(r => { const y = getYear(r); if(y) years.add(y); });
-    }
-    
-    const yearSelect = document.getElementById("yearFilter");
-    Array.from(years).sort().forEach(y => yearSelect.innerHTML += `<option value="${y}">${y}</option>`);
-    
-    document.getElementById("loadingKpi").style.display = "none";
-    updateDashboard();
+    try {
+      const keys = Object.keys(CONFIG);
+      for (const key of keys) {
+        store[key] = await fetchData(key);
+      }
+      
+      // Populate Year Filter
+      const allDates = [...store.QLKT, ...store.NHAN_TRA_HS].map(d => getYear(d["Ngày"])).filter(y => y && y !== "1899");
+      const years = [...new Set(allDates)].sort().reverse();
+      const ySelect = document.getElementById("yearFilter");
+      years.forEach(y => ySelect.add(new Option(y, y)));
 
-    document.getElementById("dataTypeFilter").addEventListener("change", updateDashboard);
-    document.getElementById("yearFilter").addEventListener("change", updateDashboard);
+      document.getElementById("loading").style.display = "none";
+      document.getElementById("mainContent").style.display = "block";
+      updateUI();
+    } catch (e) {
+      document.getElementById("loading").innerHTML = "Lỗi tải dữ liệu. Vui lòng kiểm tra quyền truy cập Sheet.";
+    }
   }
+
+  // Events
+  document.getElementById("dataTypeFilter").addEventListener("change", () => { currentPage = 1; updateUI(); });
+  document.getElementById("yearFilter").addEventListener("change", () => { currentPage = 1; updateUI(); });
+  document.getElementById("prevPage").addEventListener("click", () => { if(currentPage > 1) { currentPage--; updateUI(); } });
+  document.getElementById("nextPage").addEventListener("click", () => { currentPage++; updateUI(); });
 
   init();
 </script>
