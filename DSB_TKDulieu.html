@@ -1,381 +1,338 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { 
-  BarChart3, PieChart, Table as TableIcon, 
-  Layers, Calendar, Filter, Download, 
-  ChevronDown, ArrowUpRight, CheckCircle2, 
-  Search, Briefcase, FileText
-} from 'lucide-react';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement,
-} from 'chart.js';
-import { Bar, Pie } from 'react-chartjs-2';
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thống kê Tổng hợp Dữ liệu QLKT</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .chart-container { position: relative; height: 250px; width: 100%; }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement
-);
+    <script type="text/babel">
+        const { useState, useEffect, useMemo, useRef } = React;
 
-// ====== CONFIGURATION ======
-const SPREADSHEETS = {
-  MAIN: "12VZMuTxWo1o44zYpX2llB2BSGbEgn4nQldCKRUbdmeQ",
-  NHAN_TRA: "1nxlqtzGM8eXao25nodxwKr6Cu70BiFJNW12b06zF1d4"
-};
+        // Cấu hình ID Google Sheets
+        const SPREADSHEET_MAIN = "12VZMuTxWo1o44zYpX2llB2BSGbEgn4nQldCKRUbdmeQ";
+        const SPREADSHEET_NHAN_TRA = "1nxlqtzGM8eXao25nodxwKr6Cu70BiFJNW12b06zF1d4";
 
-const SHEETS = {
-  QLKT: "QLKT Data Sort",
-  TRINH_VB: "QLKT Trình ký Sort",
-  NGHIEM_THU: "QLKT Nghiệm thu nội bộ Sort",
-  NHAN_TRA: "Nhan-Tra HS trinh ky"
-};
+        const Dashboard = () => {
+            const [data, setData] = useState({ qlkt: [], trinhVb: [], nghiemThu: [], nhanTra: [] });
+            const [loading, setLoading] = useState(true);
+            const [filters, setFilters] = useState({ type: 'QLKT', year: 'all', month: 'all', unit: 'all' });
+            
+            const barChartRef = useRef(null);
+            const pieChartRef = useRef(null);
+            const charts = useRef({ bar: null, pie: null });
 
-const DashboardQLKT = () => {
-  const [loading, setLoading] = useState(true);
-  const [data, setData] = useState({ qlkt: [], trinhVb: [], nghiemThu: [], nhanTra: [] });
-  const [filters, setFilters] = useState({
-    type: 'QLKT',
-    year: 'all',
-    month: 'all',
-    unit: 'all'
-  });
+            // 1. Fetch dữ liệu từ Google Sheets
+            useEffect(() => {
+                const fetchData = async () => {
+                    const fetchJSON = async (id, sheetName) => {
+                        try {
+                            const url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
+                            const res = await fetch(url);
+                            const text = await res.text();
+                            const json = JSON.parse(text.substring(47, text.length - 2));
+                            const cols = json.table.cols.map(c => c.label || c.id);
+                            return json.table.rows.map(r => {
+                                const obj = {};
+                                r.c.forEach((cell, i) => { obj[cols[i]] = cell ? cell.v : null; });
+                                return obj;
+                            });
+                        } catch (e) { return []; }
+                    };
 
-  // ====== FETCHING DATA ======
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const fetchSheet = async (id, name) => {
-          const url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(name)}`;
-          const res = await fetch(url);
-          const text = await res.text();
-          const json = JSON.parse(text.substring(47, text.length - 2));
-          const cols = json.table.cols.map(c => c.label || c.id);
-          return json.table.rows.map(r => {
-            const row = {};
-            r.c.forEach((cell, i) => { row[cols[i]] = cell ? cell.v : null; });
-            return row;
-          });
+                    const [d1, d2, d3, d4] = await Promise.all([
+                        fetchJSON(SPREADSHEET_MAIN, "QLKT Data Sort"),
+                        fetchJSON(SPREADSHEET_MAIN, "QLKT Trình ký Sort"),
+                        fetchJSON(SPREADSHEET_MAIN, "QLKT Nghiệm thu nội bộ Sort"),
+                        fetchJSON(SPREADSHEET_NHAN_TRA, "Nhan-Tra HS trinh ky")
+                    ]);
+
+                    setData({ qlkt: d1, trinhVb: d2, nghiemThu: d3, nhanTra: d4 });
+                    setLoading(false);
+                };
+                fetchData();
+            }, []);
+
+            // 2. Xử lý logic lọc
+            const parseDate = (val) => {
+                if (!val) return null;
+                if (typeof val === 'string' && val.includes('Date')) {
+                    const m = val.match(/\d+/g);
+                    return new Date(m[0], m[1], m[2]);
+                }
+                return new Date(val);
+            };
+
+            const filteredData = useMemo(() => {
+                let source = [];
+                if (filters.type === 'QLKT') source = data.qlkt;
+                else if (filters.type === 'TRINH_VB') source = data.trinhVb;
+                else if (filters.type === 'NGHIEM_THU') source = data.nghiemThu;
+                else if (filters.type === 'NHAN_TRA') source = data.nhanTra;
+
+                return source.filter(row => {
+                    const dateKey = filters.type === 'NHAN_TRA' ? 'Ngày nhận HS' : 'Ngày';
+                    const date = parseDate(row[dateKey] || row['Year']);
+                    const y = date ? date.getFullYear().toString() : '';
+                    const m = date ? (date.getMonth() + 1).toString() : '';
+                    const u = row['Đơn vị thực hiện'];
+
+                    return (filters.year === 'all' || y === filters.year) &&
+                           (filters.month === 'all' || m === filters.month) &&
+                           (filters.unit === 'all' || u === filters.unit);
+                });
+            }, [data, filters]);
+
+            // 3. Danh sách Năm và Đơn vị cho bộ lọc
+            const uniqueYears = useMemo(() => {
+                const all = [...data.qlkt, ...data.trinhVb, ...data.nghiemThu, ...data.nhanTra];
+                return [...new Set(all.map(r => {
+                    const d = parseDate(r['Ngày'] || r['Ngày nhận HS'] || r['Year']);
+                    return d ? d.getFullYear().toString() : null;
+                }).filter(Boolean))].sort((a,b) => b - a);
+            }, [data]);
+
+            const uniqueUnits = useMemo(() => {
+                return [...new Set(data.nhanTra.map(r => r['Đơn vị thực hiện']).filter(Boolean))].sort();
+            }, [data]);
+
+            // 4. Cập nhật biểu đồ
+            useEffect(() => {
+                if (loading) return;
+
+                // Bar Chart
+                const monthlyData = Array(12).fill(0);
+                filteredData.forEach(r => {
+                    const d = parseDate(r['Ngày'] || r['Ngày nhận HS']);
+                    if (d) monthlyData[d.getMonth()]++;
+                });
+
+                if (charts.current.bar) charts.current.bar.destroy();
+                charts.current.bar = new Chart(barChartRef.current, {
+                    type: 'bar',
+                    data: {
+                        labels: ['T1','T2','T3','T4','T5','T6','T7','T8','T9','T10','T11','T12'],
+                        datasets: [{ label: 'Số lượng', data: monthlyData, backgroundColor: '#3b82f6', borderRadius: 4 }]
+                    },
+                    options: { maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                });
+
+                // Pie Chart
+                if (charts.current.pie) charts.current.pie.destroy();
+                charts.current.pie = new Chart(pieChartRef.current, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['QLKT', 'Trình ký', 'Nghiệm thu', 'Nhận/Trả Hồ sơ'],
+                        datasets: [{
+                            data: [data.qlkt.length, data.trinhVb.length, data.nghiemThu.length, data.nhanTra.length],
+                            backgroundColor: ['#60a5fa', '#34d399', '#fbbf24', '#818cf8']
+                        }]
+                    },
+                    options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+                });
+            }, [filteredData, loading]);
+
+            if (loading) return (
+                <div className="flex items-center justify-center h-screen text-slate-500 font-medium">
+                    <div className="animate-spin mr-2">
+                        <i data-lucide="loader-2"></i>
+                    </div> 
+                    Đang tải dữ liệu hệ thống...
+                </div>
+            );
+
+            return (
+                <div className="p-4 md:p-8 max-w-7xl mx-auto">
+                    {/* Header */}
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                        <div>
+                            <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                                <span className="bg-blue-600 p-1.5 rounded-lg text-white"><i data-lucide="database" size="20"></i></span>
+                                Thống kê Tổng hợp QLKT
+                            </h1>
+                            <p className="text-slate-500 text-sm mt-1">Dữ liệu cập nhật</p>
+                        </div>
+                        <div className="bg-white px-4 py-2 rounded-full border border-slate-200 shadow-sm text-xs font-bold text-blue-600">
+                            Phiên bản QLKT v2.0
+                        </div>
+                    </div>
+
+                    {/* Filter Bar */}
+                    <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap gap-4 mb-6">
+                        <div className="flex-1 min-w-[200px]">
+                            <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-1">Loại dữ liệu</label>
+                            <select 
+                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                value={filters.type}
+                                onChange={(e) => setFilters({...filters, type: e.target.value, unit: 'all'})}
+                            >
+                                <option value="QLKT">Dữ liệu QLKT</option>
+                                <option value="TRINH_VB">Văn bản Trình ký</option>
+                                <option value="NGHIEM_THU">Nghiệm thu nội bộ</option>
+                                <option value="NHAN_TRA">Nhận/Trả Hồ sơ</option>
+                            </select>
+                        </div>
+                        <div className="w-32">
+                            <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-1">Năm</label>
+                            <select 
+                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none"
+                                value={filters.year}
+                                onChange={(e) => setFilters({...filters, year: e.target.value})}
+                            >
+                                <option value="all">Tất cả</option>
+                                {uniqueYears.map(y => <option key={y} value={y}>{y}</option>)}
+                            </select>
+                        </div>
+                        {filters.type === 'NHAN_TRA' && (
+                            <div className="flex-1 min-w-[240px]">
+                                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-1">Đơn vị thực hiện</label>
+                                <select 
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none"
+                                    value={filters.unit}
+                                    onChange={(e) => setFilters({...filters, unit: e.target.value})}
+                                >
+                                    <option value="all">Tất cả đơn vị</option>
+                                    {uniqueUnits.map(u => <option key={u} value={u}>{u}</option>)}
+                                </select>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* KPI Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                            <p className="text-slate-400 text-[11px] font-bold uppercase tracking-wider">Tổng bản ghi</p>
+                            <div className="flex items-center justify-between mt-1">
+                                <span className="text-2xl font-bold text-slate-800">{filteredData.length}</span>
+                                <div className="p-2 bg-blue-50 rounded-lg text-blue-600"><i data-lucide="file-text" size="18"></i></div>
+                            </div>
+                        </div>
+                        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                            <p className="text-slate-400 text-[11px] font-bold uppercase tracking-wider">Năm đang xem</p>
+                            <div className="flex items-center justify-between mt-1">
+                                <span className="text-2xl font-bold text-slate-800">{filters.year === 'all' ? 'Tất cả' : filters.year}</span>
+                                <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600"><i data-lucide="calendar" size="18"></i></div>
+                            </div>
+                        </div>
+                        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                            <p className="text-slate-400 text-[11px] font-bold uppercase tracking-wider">Trạng thái</p>
+                            <div className="flex items-center justify-between mt-1">
+                                <span className="text-2xl font-bold text-slate-800">Live</span>
+                                <div className="p-2 bg-amber-50 rounded-lg text-amber-600"><i data-lucide="activity" size="18"></i></div>
+                            </div>
+                        </div>
+                        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                            <p className="text-slate-400 text-[11px] font-bold uppercase tracking-wider">Nguồn</p>
+                            <div className="flex items-center justify-between mt-1">
+                                <span className="text-2xl font-bold text-slate-800">P.QLKT</span>
+                                <div className="p-2 bg-purple-50 rounded-lg text-purple-600"><i data-lucide="shield" size="18"></i></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Charts Section */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                        <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                            <h3 className="text-sm font-bold text-slate-700 mb-6 flex items-center gap-2">
+                                <i data-lucide="bar-chart-3" className="text-blue-600" size="18"></i> Thống kê theo tháng
+                            </h3>
+                            <div className="chart-container"><canvas ref={barChartRef}></canvas></div>
+                        </div>
+                        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                            <h3 className="text-sm font-bold text-slate-700 mb-6 flex items-center gap-2">
+                                <i data-lucide="pie-chart" className="text-blue-600" size="18"></i> Cơ cấu dữ liệu
+                            </h3>
+                            <div className="chart-container"><canvas ref={pieChartRef}></canvas></div>
+                        </div>
+                    </div>
+
+                    {/* Table Section */}
+                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                            <h3 className="text-sm font-bold text-slate-700 flex items-center gap-2">
+                                <i data-lucide="list" className="text-blue-600" size="18"></i> Danh sách chi tiết
+                            </h3>
+                            <span className="text-[11px] text-slate-400 font-bold uppercase tracking-tighter">Hiển thị tối đa 10 dòng</span>
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="bg-slate-50/80 text-slate-500 text-[10px] uppercase font-bold tracking-widest border-b border-slate-100">
+                                        <th className="px-6 py-4">STT</th>
+                                        {filters.type === 'NHAN_TRA' ? (
+                                            <>
+                                                <th className="px-6 py-4">Tên dự án</th>
+                                                <th className="px-6 py-4">Đơn vị thực hiện</th>
+                                                <th className="px-6 py-4 text-blue-600">Ngày nhận HS</th>
+                                                <th className="px-6 py-4 text-emerald-600">Ngày trả HS</th>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <th className="px-6 py-4">Tên dự án / Nội dung</th>
+                                                <th className="px-6 py-4">Đơn vị / Nhân sự</th>
+                                                <th className="px-6 py-4">Ngày</th>
+                                                <th className="px-6 py-4">ID</th>
+                                            </>
+                                        )}
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-50">
+                                    {filteredData.slice(0, 100).map((item, idx) => (
+                                        <tr key={idx} className="hover:bg-blue-50/30 transition-colors text-sm">
+                                            <td className="px-6 py-4 text-slate-400 font-medium">{idx + 1}</td>
+                                            {filters.type === 'NHAN_TRA' ? (
+                                                <>
+                                                    <td className="px-6 py-4 font-semibold text-slate-700">{item['Tên dự án']}</td>
+                                                    <td className="px-6 py-4 text-slate-600">{item['Đơn vị thực hiện']}</td>
+                                                    <td className="px-6 py-4 text-blue-600 font-medium">{item['Ngày nhận HS']}</td>
+                                                    <td className="px-6 py-4 text-emerald-600 font-medium">{item['Ngày trả HS'] || '---'}</td>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <td className="px-6 py-4 font-medium text-slate-700">{item['Tên dự án'] || item['Về việc'] || item['Tên Hợp đồng']}</td>
+                                                    <td className="px-6 py-4 text-slate-500">{item['Đơn vị thực hiện'] || item['Chuyên viên phụ trách'] || item['Lãnh đạo ký']}</td>
+                                                    <td className="px-6 py-4 text-slate-500">{item['Ngày']}</td>
+                                                    <td className="px-6 py-4"><span className="bg-slate-100 text-slate-500 px-2 py-1 rounded text-[10px]">{item['ID'] || 'N/A'}</span></td>
+                                                </>
+                                            )}
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                            {filteredData.length === 0 && (
+                                <div className="p-12 text-center text-slate-400 text-sm">Không tìm thấy dữ liệu phù hợp với bộ lọc hiện tại</div>
+                            )}
+                        </div>
+                    </div>
+                    <footer className="mt-8 text-center text-slate-400 text-[10px] font-medium uppercase tracking-widest">
+                        Bản quyền thuộc về Phòng Quản lý Kỹ thuật - 2026
+                    </footer>
+                </div>
+            );
         };
 
-        const [d1, d2, d3, d4] = await Promise.all([
-          fetchSheet(SPREADSHEETS.MAIN, SHEETS.QLKT),
-          fetchSheet(SPREADSHEETS.MAIN, SHEETS.TRINH_VB),
-          fetchSheet(SPREADSHEETS.MAIN, SHEETS.NGHIEM_THU),
-          fetchSheet(SPREADSHEETS.NHAN_TRA, SHEETS.NHAN_TRA)
-        ]);
-
-        setData({ qlkt: d1, trinhVb: d2, nghiemThu: d3, nhanTra: d4 });
-        setLoading(false);
-      } catch (err) {
-        console.error("Error fetching data:", err);
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
-
-  // ====== UTILS ======
-  const parseDate = (val) => {
-    if (!val) return null;
-    if (typeof val === 'string' && val.includes('Date')) {
-      const match = val.match(/\d+/g);
-      return new Date(match[0], match[1], match[2]);
-    }
-    return new Date(val);
-  };
-
-  const getYear = (row, type) => {
-    const dateKey = type === 'NHAN_TRA' ? 'Ngày nhận HS' : 'Ngày';
-    const date = parseDate(row[dateKey] || row['Year']);
-    return date ? date.getFullYear() : (row['Year'] || row['Năm']);
-  };
-
-  const getMonth = (row, type) => {
-    const dateKey = type === 'NHAN_TRA' ? 'Ngày nhận HS' : 'Ngày';
-    const date = parseDate(row[dateKey]);
-    return date ? date.getMonth() + 1 : null;
-  };
-
-  // ====== FILTERING LOGIC ======
-  const filteredData = useMemo(() => {
-    let source = [];
-    if (filters.type === 'QLKT') source = data.qlkt;
-    else if (filters.type === 'TRINH_VB') source = data.trinhVb;
-    else if (filters.type === 'NGHIEM_THU') source = data.nghiemThu;
-    else if (filters.type === 'NHAN_TRA') source = data.nhanTra;
-    else source = [...data.qlkt, ...data.trinhVb, ...data.nghiemThu];
-
-    return source.filter(row => {
-      const y = getYear(row, filters.type);
-      const m = getMonth(row, filters.type);
-      const u = row['Đơn vị thực hiện'];
-      
-      const matchYear = filters.year === 'all' || String(y) === filters.year;
-      const matchMonth = filters.month === 'all' || String(m) === filters.month;
-      const matchUnit = filters.unit === 'all' || u === filters.unit;
-
-      return matchYear && matchMonth && matchUnit;
-    });
-  }, [data, filters]);
-
-  // ====== METRICS ======
-  const years = useMemo(() => {
-    const all = [...data.qlkt, ...data.trinhVb, ...data.nghiemThu, ...data.nhanTra];
-    return [...new Set(all.map(r => getYear(r)).filter(Boolean))].sort((a, b) => b - a);
-  }, [data]);
-
-  const units = useMemo(() => {
-    return [...new Set(data.nhanTra.map(r => r['Đơn vị thực hiện']).filter(Boolean))].sort();
-  }, [data]);
-
-  const monthlyCounts = useMemo(() => {
-    const counts = Array(12).fill(0);
-    filteredData.forEach(r => {
-      const m = getMonth(r, filters.type);
-      if (m) counts[m - 1]++;
-    });
-    return counts;
-  }, [filteredData, filters.type]);
-
-  // ====== COMPONENTS ======
-  const KpiCard = ({ title, value, icon: Icon, color }) => (
-    <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-      <div className="flex justify-between items-start">
-        <div>
-          <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-1">{title}</p>
-          <h3 className="text-2xl font-bold text-slate-800">{value}</h3>
-        </div>
-        <div className={`p-2 rounded-lg ${color}`}>
-          <Icon size={20} className="text-white" />
-        </div>
-      </div>
-    </div>
-  );
-
-  return (
-    <div className="min-h-screen bg-[#f8fafc] p-4 md:p-8 text-slate-800 font-sans">
-      <div className="max-w-7xl mx-auto">
-        {/* HEADER */}
-        <header className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-          <div>
-            <h1 className="text-2xl font-extrabold flex items-center gap-2 text-slate-900">
-              <div className="bg-blue-600 p-2 rounded-lg text-white">
-                <Layers size={24} />
-              </div>
-              Thống kê Dữ liệu QLKT
-            </h1>
-            <p className="text-slate-500 text-sm mt-1">(C) Phòng QLKT 2026</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-xs font-bold border border-blue-100">
-              © 2026 P.QLKT
-            </span>
-          </div>
-        </header>
-
-        {/* FILTERS */}
-        <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm mb-6 flex flex-wrap gap-4 items-end">
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-bold text-slate-400 uppercase ml-1">Loại dữ liệu</label>
-            <select 
-              className="block w-48 bg-slate-50 border-slate-200 rounded-xl text-sm focus:ring-blue-500 focus:border-blue-500 p-2.5 outline-none border transition-all"
-              value={filters.type}
-              onChange={(e) => setFilters({...filters, type: e.target.value, unit: 'all'})}
-            >
-              <option value="QLKT">Dữ liệu QLKT</option>
-              <option value="TRINH_VB">Văn bản Trình ký</option>
-              <option value="NGHIEM_THU">Nghiệm thu nội bộ</option>
-              <option value="NHAN_TRA">Nhận/Trả Hồ sơ</option>
-            </select>
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-bold text-slate-400 uppercase ml-1">Năm</label>
-            <select 
-              className="block w-32 bg-slate-50 border-slate-200 rounded-xl text-sm p-2.5 outline-none border transition-all"
-              value={filters.year}
-              onChange={(e) => setFilters({...filters, year: e.target.value})}
-            >
-              <option value="all">Tất cả năm</option>
-              {years.map(y => <option key={y} value={y}>{y}</option>)}
-            </select>
-          </div>
-
-          {filters.type === 'NHAN_TRA' && (
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-bold text-slate-400 uppercase ml-1">Đơn vị thực hiện</label>
-              <select 
-                className="block w-64 bg-slate-50 border-slate-200 rounded-xl text-sm p-2.5 outline-none border transition-all"
-                value={filters.unit}
-                onChange={(e) => setFilters({...filters, unit: e.target.value})}
-              >
-                <option value="all">Tất cả đơn vị</option>
-                {units.map(u => <option key={u} value={u}>{u}</option>)}
-              </select>
-            </div>
-          )}
-        </div>
-
-        {/* KPI GRID */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <KpiCard 
-            title="Tổng số bản ghi" 
-            value={filteredData.length} 
-            icon={FileText} 
-            color="bg-blue-500" 
-          />
-          <KpiCard 
-            title="Năm lọc" 
-            value={filters.year === 'all' ? 'Tất cả' : filters.year} 
-            icon={Calendar} 
-            color="bg-indigo-500" 
-          />
-          <KpiCard 
-            title="Thực hiện" 
-            value={filters.type === 'NHAN_TRA' ? 'Hồ sơ' : 'Dự án'} 
-            icon={Briefcase} 
-            color="bg-emerald-500" 
-          />
-          <KpiCard 
-            title="Trạng thái" 
-            value="Ổn định" 
-            icon={CheckCircle2} 
-            color="bg-amber-500" 
-          />
-        </div>
-
-        {/* CHARTS */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-            <h3 className="text-sm font-bold text-slate-700 mb-6 flex items-center gap-2">
-              <BarChart3 size={18} className="text-blue-600" /> Biến động theo tháng (Ngày nhận/Ngày ký)
-            </h3>
-            <div className="h-[250px]">
-              <Bar 
-                data={{
-                  labels: ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'],
-                  datasets: [{
-                    label: 'Số lượng',
-                    data: monthlyCounts,
-                    backgroundColor: '#3b82f6',
-                    borderRadius: 6,
-                  }]
-                }}
-                options={{
-                  maintainAspectRatio: false,
-                  plugins: { legend: { display: false } },
-                  scales: { y: { beginAtZero: true, grid: { borderDash: [5, 5] } }, x: { grid: { display: false } } }
-                }}
-              />
-            </div>
-          </div>
-          <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-            <h3 className="text-sm font-bold text-slate-700 mb-6 flex items-center gap-2">
-              <PieChart size={18} className="text-blue-600" /> Tỉ trọng nguồn dữ liệu
-            </h3>
-            <div className="h-[250px] flex items-center justify-center">
-              <Pie 
-                data={{
-                  labels: ['QLKT', 'Trình ký', 'Nghiệm thu', 'Hồ sơ'],
-                  datasets: [{
-                    data: [data.qlkt.length, data.trinhVb.length, data.nghiemThu.length, data.nhanTra.length],
-                    backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#6366f1'],
-                    borderWidth: 0,
-                  }]
-                }}
-                options={{ maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* DATA TABLE */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-          <div className="p-5 border-b border-slate-50 flex justify-between items-center">
-            <h3 className="font-bold text-slate-700 flex items-center gap-2">
-              <TableIcon size={18} className="text-blue-600" /> Danh sách chi tiết
-            </h3>
-            <span className="text-xs text-slate-400 font-medium">Hiển thị {filteredData.length} kết quả</span>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm border-collapse">
-              <thead>
-                <tr className="bg-slate-50/50 text-slate-500 uppercase text-[11px] font-bold tracking-wider">
-                  <th className="px-6 py-4">STT</th>
-                  {filters.type === 'NHAN_TRA' ? (
-                    <>
-                      <th className="px-6 py-4">Tên dự án</th>
-                      <th className="px-6 py-4">Đơn vị thực hiện</th>
-                      <th className="px-6 py-4">Ngày nhận HS</th>
-                      <th className="px-6 py-4">Ngày trả HS</th>
-                    </>
-                  ) : filters.type === 'QLKT' ? (
-                    <>
-                      <th className="px-6 py-4">Tên dự án</th>
-                      <th className="px-6 py-4">Chuyên viên</th>
-                      <th className="px-6 py-4">Đơn vị</th>
-                      <th className="px-6 py-4">Ngày</th>
-                    </>
-                  ) : (
-                    <>
-                      <th className="px-6 py-4">Về việc / Tên HĐ</th>
-                      <th className="px-6 py-4">Đơn vị / Người ký</th>
-                      <th className="px-6 py-4">Ngày</th>
-                      <th className="px-6 py-4">Ghi chú</th>
-                    </>
-                  )}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50">
-                {filteredData.slice(0, 50).map((row, idx) => (
-                  <tr key={idx} className="hover:bg-blue-50/30 transition-colors">
-                    <td className="px-6 py-4 font-medium text-slate-400">{idx + 1}</td>
-                    {filters.type === 'NHAN_TRA' ? (
-                      <>
-                        <td className="px-6 py-4 font-semibold text-slate-700">{row['Tên dự án']}</td>
-                        <td className="px-6 py-4 font-medium text-slate-600">{row['Đơn vị thực hiện']}</td>
-                        <td className="px-6 py-4 text-blue-600 font-medium">{row['Ngày nhận HS']}</td>
-                        <td className="px-6 py-4 text-emerald-600 font-medium">{row['Ngày trả HS'] || '---'}</td>
-                      </>
-                    ) : (
-                      <>
-                        <td className="px-6 py-4 font-medium text-slate-700">{row['Tên dự án'] || row['Về việc'] || row['Tên Hợp đồng']}</td>
-                        <td className="px-6 py-4 text-slate-600">{row['Đơn vị thực hiện'] || row['Lãnh đạo ký'] || row['Chuyên viên phụ trách']}</td>
-                        <td className="px-6 py-4 text-slate-500">{row['Ngày']}</td>
-                        <td className="px-6 py-4">
-                          <span className="px-2 py-1 bg-slate-100 text-slate-500 rounded text-[10px] font-bold">
-                            ID: {row['ID'] || 'N/A'}
-                          </span>
-                        </td>
-                      </>
-                    )}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {filteredData.length === 0 && (
-              <div className="p-20 text-center text-slate-400">
-                Không tìm thấy dữ liệu phù hợp với bộ lọc
-              </div>
-            )}
-          </div>
-          <div className="p-4 bg-slate-50/50 border-t border-slate-50 text-center">
-             <button className="text-blue-600 text-xs font-bold hover:underline">Xem tất cả dữ liệu</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default DashboardQLKT;
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<Dashboard />);
+        
+        // Render Icons sau khi component mount
+        setTimeout(() => lucide.createIcons(), 500);
+    </script>
+</body>
+</html>
