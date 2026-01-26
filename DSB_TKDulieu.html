@@ -1,13 +1,15 @@
+<!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8" />
-  <title>Thống kê Tổng hợp Dữ liệu QLKT</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<meta charset="UTF-8" />
+<title>Thống kê Tổng hợp Dữ liệu QLKT</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <style>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
     /* ================= LIGHT MODE THEME ================= */
     :root {
       --bg: #f8fafc;
@@ -339,7 +341,6 @@
       <div class="card-header">
         <div>
           <div class="card-title"><i class="fa-solid fa-gauge-high"></i> Chỉ số tổng hợp</div>
-          <div class="card-subtitle">KPI và biểu đồ</div>
         </div>
       </div>
 
@@ -364,44 +365,93 @@
     </div>
   </div>
 
-  <!-- TABLE -->
-  <div class="card" style="margin-top:20px">
-    <div class="card-header">
-      <div class="card-title"><i class="fa-solid fa-table-list"></i> Danh sách dữ liệu</div>
-    </div>
-    <div class="table-wrapper">
-      <div id="tableHeader" class="table-header-row" style="--cols:1fr 1fr"></div>
-      <div id="tableBody" class="table-body"></div>
+  /* ====== PAGINATION ====== */
+.pagination {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-top:10px;
+  font-size:12px;
+  color:#64748b;
+}
+.pagination button {
+  border:1px solid #e2e8f0;
+  background:#fff;
+  border-radius:6px;
+  padding:4px 8px;
+  cursor:pointer;
+  font-size:12px;
+}
+.pagination button:disabled {
+  opacity:0.5;
+  cursor:not-allowed;
+}
+.pagination .controls {
+  display:flex;
+  gap:6px;
+}
+</style>
+</head>
+
+<body>
+<div class="dashboard">
+<div class="card" style="margin-top:20px">
+  <div class="card-header">
+    <div class="card-title">
+      <i class="fa-solid fa-table-list"></i> Danh sách dữ liệu
     </div>
   </div>
+
+  <div class="table-wrapper">
+    <div id="tableHeader" class="table-header-row"></div>
+    <div id="tableBody" class="table-body"></div>
+  </div>
+
+  <!-- PAGINATION -->
+  <div class="pagination" id="pagination" style="display:none">
+    <div id="pageInfo"></div>
+    <div class="controls">
+      <button id="firstPage">⏮</button>
+      <button id="prevPage">◀</button>
+      <button id="nextPage">▶</button>
+      <button id="lastPage">⏭</button>
+    </div>
+  </div>
+</div>
 
 </div>
 
 <script>
   // ====== CẤU HÌNH GOOGLE SHEETS ======
-  const SPREADSHEET_ID = "12VZMuTxWo1o44zYpX2llB2BSGbEgn4nQldCKRUbdmeQ";
+  const SPREADSHEET_ID_MAIN = "12VZMuTxWo1o44zYpX2llB2BSGbEgn4nQldCKRUbdmeQ";
+  const SPREADSHEET_ID_HS   = "1nxlqtzGM8eXao25nodxwKr6Cu70BiFJNW12b06zF1d4";
+
   const SHEET_NAME_DUAN      = "QLKT Data Sort";
   const SHEET_NAME_TRINHKY   = "QLKT Trình ký Sort";
   const SHEET_NAME_NGHIEMTHU = "QLKT Nghiệm thu nội bộ Sort";
-  const SPREADSHEET_ID = "1nxlqtzGM8eXao25nodxwKr6Cu70BiFJNW12b06zF1d4";
-  const SHEET_NAME_DUAN      = "Nhan-Tra HS trinh ky";
+  const SHEET_NAME_NHANTRAHS = "Nhan-Tra HS trinh ky";
   // ====== DOM ======
-  const dataTypeFilter = document.getElementById("dataTypeFilter");
-  const yearFilter   = document.getElementById("yearFilter");
-  const monthFilter  = document.getElementById("monthFilter");
-  const kpiGrid      = document.getElementById("kpiGrid");
-  const tableHeader  = document.getElementById("tableHeader");
-  const tableBody    = document.getElementById("tableBody");
-  const loadingKpi   = document.getElementById("loadingKpi");
-  const errorBox     = document.getElementById("errorBox");
-  const breakdownField = document.getElementById("breakdownField");
+  const tableHeader = document.getElementById("tableHeader");
+  const tableBody   = document.getElementById("tableBody");
+
+  const pagination  = document.getElementById("pagination");
+  const pageInfo    = document.getElementById("pageInfo");
+  const firstBtn    = document.getElementById("firstPage");
+  const prevBtn     = document.getElementById("prevPage");
+  const nextBtn     = document.getElementById("nextPage");
+  const lastBtn     = document.getElementById("lastPage");
 
   let dataQLKT = [], dataTRINH_VB = [], dataNGHIEM_THU_NB = [], dataNHANTRAHS = [];
   let chart, pie, breakdownChart;
-
   const MONTH_PALETTE = [
     "#38bdf8", "#60a5fa", "#818cf8", "#a78bfa", "#c084fc", "#e879f9", 
     "#f472b6", "#fb7185", "#f87171", "#fb923c", "#fbbf24", "#34d399"
+/* ===== PAGINATION STATE ===== */
+  let currentPage = 1;
+  const PAGE_SIZE = 20;
+  let currentTableData = [];
+  let currentSchema = null;
+  
   ];
 
   // ====== SCHEMA ======
@@ -414,30 +464,75 @@
   };
 
   // ====== FETCH GViz ======
-  async function fetchSheetJSON(sheetName) {
-    const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
-    const res = await fetch(url);
-    const raw = await res.text();
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const start = raw.indexOf('{'), end = raw.lastIndexOf('}');
-    if (start === -1 || end === -1) throw new Error('Phản hồi không hợp lệ');
-    return JSON.parse(raw.substring(start, end + 1));
+  async function fetchSheetJSON(spreadsheetId, sheetName) {
+  const url = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
+  const res = await fetch(url);
+  const raw = await res.text();
+  const start = raw.indexOf('{'), end = raw.lastIndexOf('}');
+  return JSON.parse(raw.substring(start, end + 1));
+}
+  function parseTable(gvizJson) {
+  const cols = gvizJson.table.cols.map(c => c.label);
+  return gvizJson.table.rows.map(r => {
+    const obj = {};
+    r.c.forEach((cell, i) => obj[cols[i]] = cell ? cell.v : "");
+    return obj;
+  });
+}
+
+function rowHasMeaningfulData(row) {
+  return Object.values(row).some(v => v && String(v).trim() !== "");
+}
+
+function renderTablePage() {
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const pageRows = currentTableData.slice(start, start + PAGE_SIZE);
+
+  tableBody.innerHTML = pageRows.map(r =>
+    `<div class="table-row">
+      ${currentSchema.tableCols.map(c => `<div>${r[c.key] ?? ""}</div>`).join("")}
+    </div>`
+  ).join("");
+
+  const totalPages = Math.ceil(currentTableData.length / PAGE_SIZE);
+  pageInfo.textContent = `Trang ${currentPage} / ${totalPages} – Tổng ${currentTableData.length} bản ghi`;
+
+  firstBtn.disabled = currentPage === 1;
+  prevBtn.disabled  = currentPage === 1;
+  nextBtn.disabled  = currentPage === totalPages;
+  lastBtn.disabled  = currentPage === totalPages;
+}
+
+function renderTable(schema, filtered) {
+  currentSchema = schema;
+  currentTableData = filtered.filter(rowHasMeaningfulData);
+  currentPage = 1;
+
+  const cols = schema.tableCols;
+  const colTemplate = cols.map(c => c.width || "1fr").join(" ");
+  tableHeader.style.setProperty("--cols", colTemplate);
+  tableBody.style.setProperty("--cols", colTemplate);
+
+  tableHeader.innerHTML = cols.map(c => `<div>${c.label}</div>`).join("");
+
+  if (currentTableData.length <= PAGE_SIZE) {
+    pagination.style.display = "none";
+  } else {
+    pagination.style.display = "flex";
   }
 
-  function parseTable(gvizJson) {
-    const cols = (gvizJson.table?.cols || []).map(c => (c.label || c.id || "").toString().trim());
-    const rows = gvizJson.table?.rows || [];
-    return rows.map(r => {
-      const obj = {};
-      (r.c || []).forEach((cell, idx) => {
-        let val = null;
-        if (cell && cell.v !== undefined) val = cell.v;
-        else if (cell && cell.f !== undefined) val = cell.f;
-        obj[cols[idx] || `col${idx}`] = val;
-      });
-      return obj;
-    });
-  }
+  renderTablePage();
+}
+/* =====================================================
+   PAGINATION EVENTS
+===================================================== */
+firstBtn.onclick = () => { currentPage = 1; renderTablePage(); };
+prevBtn.onclick  = () => { if (currentPage > 1) currentPage--; renderTablePage(); };
+nextBtn.onclick  = () => { currentPage++; renderTablePage(); };
+lastBtn.onclick  = () => {
+  currentPage = Math.ceil(currentTableData.length / PAGE_SIZE);
+  renderTablePage();
+};
 
   // ====== NGÀY/THÁNG/NĂM ======
   function parseDateString(s) {
@@ -642,7 +737,7 @@
         labels: ["QLKT", "Trình VB", "Nghiệm thu NB" , "Nhận/Trả Hồ sơ"],
         datasets: [{
           data: [qlktCount, trinhvbCount, nghiemthuCount, nhantrahs],
-          backgroundColor: ["#60a5fa", "#34d399", "#fbbf24"],
+          backgroundColor: ["#60a5fa", "#34d399", "#fbbf24", "#fbbf34"],
           borderColor: ["#0b1220", "#0b1220", "#0b1220"],
           borderWidth: 1
         }]
@@ -860,37 +955,27 @@
     renderBreakdownPie(breakdownField.value || "none");
   }
 
-  async function loadAllDataAndInit() {
-    try {
-      loadingKpi.style.display = "block";
-      const [g1, g2, g3] = await Promise.all([
-        fetchSheetJSON(SHEET_NAME_DUAN),
-        fetchSheetJSON(SHEET_NAME_TRINHKY),
-        fetchSheetJSON(SHEET_NAME_NGHIEMTHU),
-        fetchSheetJSON(SHEET_NAME_NHANTRAHS)
-      ]);
-      dataQLKT = parseTable(g1);
-      dataTRINH_VB = parseTable(g2);
-      dataNGHIEM_THU_NB = parseTable(g3);
-      dataNHANTRAHS = parseTable(g4);
+  /* =====================================================
+   LOAD DATA
+===================================================== */
+async function loadAllDataAndInit() {
+  const [g1, g2, g3, g4] = await Promise.all([
+    fetchSheetJSON(SPREADSHEET_ID_MAIN, SHEET_NAME_DUAN),
+    fetchSheetJSON(SPREADSHEET_ID_MAIN, SHEET_NAME_TRINHKY),
+    fetchSheetJSON(SPREADSHEET_ID_MAIN, SHEET_NAME_NGHIEMTHU),
+    fetchSheetJSON(SPREADSHEET_ID_HS,   SHEET_NAME_NHANTRAHS)
+  ]);
 
-      populateYearFilter();
-      updateDashboard();
-    } catch (err) {
-      loadingKpi.style.display = "none";
-      errorBox.style.display = "block";
-      errorBox.textContent = "Lỗi khi tải dữ liệu: " + err.message;
-      console.error(err);
-    }
-  }
+  dataQLKT = parseTable(g1);
+  dataTRINH_VB = parseTable(g2);
+  dataNGHIEM_THU_NB = parseTable(g3);
+  dataNHANTRAHS = parseTable(g4);
 
-  document.addEventListener("DOMContentLoaded", () => {
-    loadAllDataAndInit();
-    dataTypeFilter.addEventListener("change", () => { updateDashboard(); });
-    yearFilter.addEventListener("change", updateDashboard);
-    monthFilter.addEventListener("change", updateDashboard);
-    breakdownField.addEventListener("change", (e) => renderBreakdownPie(e.target.value));
-  });
+  /* ví dụ render QLKT */
+  renderTable(TYPE_SCHEMAS.QLKT, dataQLKT);
+}
+
+document.addEventListener("DOMContentLoaded", loadAllDataAndInit);
 </script>
 </body>
 </html>
