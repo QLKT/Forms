@@ -298,6 +298,7 @@
             <option value="QLKT">QLKT</option>
             <option value="TRINH_VB">Trình VB</option>
             <option value="NGHIEM_THU_NB">Nghiệm thu NB</option>
+            <option value="NHANTRAHS">Nhận/Trả Hồ sơ</option>
             <option value="TONG_CONG">Tổng cộng</option>
           </select>
           <i class="fa-solid fa-chevron-down"></i>
@@ -382,7 +383,8 @@
   const SHEET_NAME_DUAN      = "QLKT Data Sort";
   const SHEET_NAME_TRINHKY   = "QLKT Trình ký Sort";
   const SHEET_NAME_NGHIEMTHU = "QLKT Nghiệm thu nội bộ Sort";
-
+  const SPREADSHEET_ID = "1nxlqtzGM8eXao25nodxwKr6Cu70BiFJNW12b06zF1d4";
+  const SHEET_NAME_DUAN      = "Nhan-Tra HS trinh ky";
   // ====== DOM ======
   const dataTypeFilter = document.getElementById("dataTypeFilter");
   const yearFilter   = document.getElementById("yearFilter");
@@ -394,7 +396,7 @@
   const errorBox     = document.getElementById("errorBox");
   const breakdownField = document.getElementById("breakdownField");
 
-  let dataQLKT = [], dataTRINH_VB = [], dataNGHIEM_THU_NB = [];
+  let dataQLKT = [], dataTRINH_VB = [], dataNGHIEM_THU_NB = [], dataNHANTRAHS = [];
   let chart, pie, breakdownChart;
 
   const MONTH_PALETTE = [
@@ -407,7 +409,8 @@
     QLKT: { label: "QLKT", filters: [ { key: "Ngày" }, { key: "Chuyên viên phụ trách" }, { key: "Đơn vị thực hiện" }, { key: "Tên dự án" }, { key: "Chủ nhiệm" }, { key: "Mục đích trình" }, { key: "ID" }, { key: "Year" } ], tableCols: [ { key: "Ngày", label: "Ngày", width: "1.2fr" }, { key: "Chuyên viên phụ trách", label: "Chuyên viên", width: "1.2fr" }, { key: "Đơn vị thực hiện", label: "Đơn vị thực hiện", width: "1.2fr" }, { key: "Tên dự án", label: "Tên dự án", width: "2fr" }, { key: "Chủ nhiệm", label: "Chủ nhiệm", width: "1fr" }, { key: "Mục đích trình", label: "Mục đích trình", width: "1.4fr" }, { key: "ID", label: "ID", width: "0.8fr" }, { key: "Year", label: "Year", width: "0.8fr" } ] },
     TRINH_VB: { label: "Trình VB", filters: [ { key: "Ngày" }, { key: "Lãnh đạo ký" }, { key: "Về việc" }, { key: "Ý kiến chỉ đạo" }, { key: "Tóm tắt nội dung và kiến nghị giải quyết" }, { key: "Cơ sở ban hành văn bản" }, { key: "Nhân viên soạn thảo văn bản" }, { key: "ID" }, { key: "Year" } ], tableCols: [ { key: "Ngày", label: "Ngày", width: "1.2fr" }, { key: "Lãnh đạo ký", label: "Lãnh đạo ký", width: "1.2fr" }, { key: "Về việc", label: "Về việc", width: "1.6fr" }, { key: "Ý kiến chỉ đạo", label: "Ý kiến chỉ đạo", width: "1.6fr" }, { key: "Tóm tắt nội dung và kiến nghị giải quyết", label: "Tóm tắt & Kiến nghị", width: "2fr" }, { key: "Cơ sở ban hành văn bản", label: "Cơ sở ban hành", width: "1.4fr" }, { key: "Nhân viên soạn thảo văn bản", label: "NV soạn thảo", width: "1.2fr" }, { key: "ID", label: "ID", width: "0.8fr" }, { key: "Year", label: "Year", width: "0.8fr" } ] },
     NGHIEM_THU_NB: { label: "Nghiệm thu NB", filters: [ { key: "Ngày" }, { key: "Đơn vị thực hiện" }, { key: "Số Hợp đồng" }, { key: "Tên Hợp đồng" }, { key: "Tình hình thực hiện" }, { key: "Đánh giá tỉ lệ hoàn thành công việc" }, { key: "Đề nghị Thanh toán" }, { key: "Tỉ lệ thanh lý" }, { key: "Đã nộp hồ sơ in (2 dấu) lưu tại Viện" }, { key: "ID" }, { key: "Year" } ], tableCols: [ { key: "Ngày", label: "Ngày", width: "1fr" }, { key: "Đơn vị thực hiện", label: "Đơn vị thực hiện", width: "1.2fr" }, { key: "Số Hợp đồng", label: "Số HĐ", width: "1fr" }, { key: "Tên Hợp đồng", label: "Tên HĐ", width: "1.6fr" }, { key: "Tình hình thực hiện", label: "Tình hình", width: "1.6fr" }, { key: "Đánh giá tỉ lệ hoàn thành công việc", label: "Tỉ lệ hoàn thành", width: "1fr" }, { key: "Đề nghị Thanh toán", label: "Thanh toán", width: "1fr" }, { key: "Tỉ lệ thanh lý", label: "Tỉ lệ thanh lý", width: "1fr" }, { key: "Đã nộp hồ sơ in (2 dấu) lưu tại Viện", label: "Hồ sơ lưu Viện", width: "1.2fr" }, { key: "ID", label: "ID", width: "0.8fr" }, { key: "Year", label: "Year", width: "0.8fr" } ] },
-    TONG_CONG: { label: "Tổng cộng", filters: [ { key: "Year" } ], tableCols: [ { key: "Year", label: "Year", width: "1fr" }, { key: "QLKT_Count", label: "QLKT", width: "1fr" }, { key: "TRINH_VB_Count", label: "Trình VB", width: "1fr" }, { key: "NGHIEM_THU_NB_Count", label: "Nghiệm thu NB", width: "1fr" }, { key: "TOTAL_Count", label: "Tổng", width: "1fr" } ] }
+    NHANTRAHS: { label: "Nhận/Trả Hồ sơ", filters: [ { key: "Tên dự án" }, { key: "Đơn vị thực hiện" }, { key: "Ngày nhận HS" }, { key: "Ngày trả HS" }, { key: "Người nhận HS" }, { key: "Ghi chú" } ], tableCols: [ { key: "Tên dự án", label: "Tên dự án", width: "1fr" }, { key: "Đơn vị thực hiện", label: "Đơn vị thực hiện", width: "1.2fr" }, { key: "Ngày nhận HS", label: "Ngày nhận HS", width: "1fr" }, { key: "Ngày trả HS", label: "Ngày trả HS", width: "1fr" }, { key: "Ghi chú", label: "Ghi chú", width: "1.6fr" }] },
+    TONG_CONG: { label: "Tổng cộng", filters: [ { key: "Year" } ], tableCols: [ { key: "Year", label: "Year", width: "1fr" }, { key: "QLKT_Count", label: "QLKT", width: "1fr" }, { key: "TRINH_VB_Count", label: "Trình VB", width: "1fr" }, { key: "NGHIEM_THU_NB_Count", label: "Nghiệm thu NB", width: "1fr" }, , { key: "NHANTRAHS_Count", label: "Nhận/Trả Hồ sơ", width: "1fr" } { key: "TOTAL_Count", label: "Tổng", width: "1fr" } ] }
   };
 
   // ====== FETCH GViz ======
@@ -636,9 +639,9 @@
     pie = new Chart(ctx, {
       type: "pie",
       data: {
-        labels: ["QLKT", "Trình VB", "Nghiệm thu NB"],
+        labels: ["QLKT", "Trình VB", "Nghiệm thu NB" , "Nhận/Trả Hồ sơ"],
         datasets: [{
-          data: [qlktCount, trinhvbCount, nghiemthuCount],
+          data: [qlktCount, trinhvbCount, nghiemthuCount, nhantrahs],
           backgroundColor: ["#60a5fa", "#34d399", "#fbbf24"],
           borderColor: ["#0b1220", "#0b1220", "#0b1220"],
           borderWidth: 1
@@ -663,14 +666,16 @@
       "Chuyên viên phụ trách", "Đơn vị thực hiện", "Chủ nhiệm", "Mục đích trình",
       "Lãnh đạo ký", "Nhân viên soạn thảo văn bản", "Nhân viên soạn thảo",
       "Đánh giá tỉ lệ hoàn thành công việc", "Tỉ lệ hoàn thành",
-      "Đề nghị Thanh toán", "Đã nộp hồ sơ in (2 dấu) lưu tại Viện", "Hồ sơ lưu Viện"
+      "Đề nghị Thanh toán", "Đã nộp hồ sơ in (2 dấu) lưu tại Viện", "Hồ sơ lưu Viện",
+      "Tên dự án", "Đơn vị thực hiện",	"Người nhận HS",
     ];
 
     let sourceData;
     if (dataTypeFilter.value === "QLKT") sourceData = dataQLKT;
     else if (dataTypeFilter.value === "TRINH_VB") sourceData = dataTRINH_VB;
     else if (dataTypeFilter.value === "NGHIEM_THU_NB") sourceData = dataNGHIEM_THU_NB;
-    else sourceData = [...dataQLKT, ...dataTRINH_VB, ...dataNGHIEM_THU_NB];
+    else if (dataTypeFilter.value === "NHANTRAHS") sourceData = dataNHANTRAHS;
+    else sourceData = [...dataQLKT, ...dataTRINH_VB, ...dataNGHIEM_THU_NB, ...dataNHANTRAHS];
 
     const available = candidateFields.filter(f => {
       return sourceData.some(r => {
@@ -700,6 +705,7 @@
     if (dataTypeFilter.value === "QLKT") sourceData = dataQLKT;
     else if (dataTypeFilter.value === "TRINH_VB") sourceData = dataTRINH_VB;
     else if (dataTypeFilter.value === "NGHIEM_THU_NB") sourceData = dataNGHIEM_THU_NB;
+    else if (dataTypeFilter.value === "NHANTRAHS") sourceData = dataNHANTRAHS;
     else sourceData = [...dataQLKT, ...dataTRINH_VB, ...dataNGHIEM_THU_NB];
 
     const filtered = applyFiltersToData(sourceData, TYPE_SCHEMAS[dataTypeFilter.value]).filter(r => rowHasMeaningfulData(r));
@@ -781,6 +787,7 @@
           <div>${safe(r.QLKT_Count)}</div>
           <div>${safe(r.TRINH_VB_Count)}</div>
           <div>${safe(r.NGHIEM_THU_NB_Count)}</div>
+          <div>${safe(r.NHANTRAHS_Count)}</div>
           <div>${safe(r.TOTAL_Count)}</div>
         </div>
       `).join("");
@@ -806,7 +813,7 @@
     const allYears = new Map();
     const add = (year, key) => {
       if (!year) return;
-      if (!allYears.has(year)) allYears.set(year, { Year: year, QLKT_Count: 0, TRINH_VB_Count: 0, NGHIEM_THU_NB_Count: 0, TOTAL_Count: 0 });
+      if (!allYears.has(year)) allYears.set(year, { Year: year, QLKT_Count: 0, TRINH_VB_Count: 0, NGHIEM_THU_NB_Count: 0, NHANTRAHS_Count: 0, TOTAL_Count: 0 });
       const o = allYears.get(year);
       o[key] += 1;
       o.TOTAL_Count += 1;
@@ -814,12 +821,13 @@
     dataQLKT.forEach(r => { const y = getYear(r); if (y && rowHasMeaningfulData(r)) add(y, "QLKT_Count"); });
     dataTRINH_VB.forEach(r => { const y = getYear(r); if (y && rowHasMeaningfulData(r)) add(y, "TRINH_VB_Count"); });
     dataNGHIEM_THU_NB.forEach(r => { const y = getYear(r); if (y && rowHasMeaningfulData(r)) add(y, "NGHIEM_THU_NB_Count"); });
+    dataNHANTRAHS.forEach(r => { const y = getYear(r); if (y && rowHasMeaningfulData(r)) add(y, "NHANTRAHS_Count"); });
     return Array.from(allYears.values()).sort((a,b) => Number(b.Year) - Number(a.Year));
   }
 
   function populateYearFilter() {
     const years = new Set();
-    [dataQLKT, dataTRINH_VB, dataNGHIEM_THU_NB].forEach(ds => {
+    [dataQLKT, dataTRINH_VB, dataNGHIEM_THU_NB, dataNHANTRAHS].forEach(ds => {
       ds.forEach(r => {
         const y = getYear(r);
         if (y) years.add(String(y));
@@ -838,7 +846,8 @@
     if (dataTypeFilter.value === "QLKT") sourceData = dataQLKT;
     else if (dataTypeFilter.value === "TRINH_VB") sourceData = dataTRINH_VB;
     else if (dataTypeFilter.value === "NGHIEM_THU_NB") sourceData = dataNGHIEM_THU_NB;
-    else sourceData = [...dataQLKT, ...dataTRINH_VB, ...dataNGHIEM_THU_NB];
+    else if (dataTypeFilter.value === "NHANTRAHS") sourceData = dataNHANTRAHS;
+    else sourceData = [...dataQLKT, ...dataTRINH_VB, ...dataNGHIEM_THU_NB, ...dataNHANTRAHS];
 
     const filtered = applyFiltersToData(sourceData, schema);
 
@@ -857,11 +866,13 @@
       const [g1, g2, g3] = await Promise.all([
         fetchSheetJSON(SHEET_NAME_DUAN),
         fetchSheetJSON(SHEET_NAME_TRINHKY),
-        fetchSheetJSON(SHEET_NAME_NGHIEMTHU)
+        fetchSheetJSON(SHEET_NAME_NGHIEMTHU),
+        fetchSheetJSON(SHEET_NAME_NHANTRAHS)
       ]);
       dataQLKT = parseTable(g1);
       dataTRINH_VB = parseTable(g2);
       dataNGHIEM_THU_NB = parseTable(g3);
+      dataNHANTRAHS = parseTable(g4);
 
       populateYearFilter();
       updateDashboard();
