@@ -4,198 +4,303 @@
   <meta charset="UTF-8" />
   <title>Thống kê Tổng hợp Dữ liệu QLKT</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <style>
     :root {
-      --bg: #ffffff;           /* Trắng tinh cho nền chính */
-      --bg-soft: #f8fafc;      /* Xám cực nhẹ cho các vùng phân cách */
-      --card: #ffffff;         /* Trắng cho các thẻ nội dung */
-      --accent: #0ea5e9;       /* Giữ màu xanh chủ đạo nhưng đậm hơn một chút để dễ nhìn trên nền trắng */
-      --text: #1e293b;         /* Chuyển chữ sang màu xanh đen đậm để tương phản */
-      --muted: #64748b;        /* Màu chữ phụ xám đậm */
-      --border: #e2e8f0;       /* Viền màu xám nhạt */
-      --radius-lg: 16px; 
+      --bg: #ffffff;
+      --bg-soft: #f8fafc;
+      --card: #ffffff;
+      --accent: #0ea5e9;
+      --text: #1e293b;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --radius-lg: 16px;
       --radius-md: 10px;
-      --label-font-size: 11px;
     }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif; background: radial-gradient(circle at top left, #1d283a, #020617 60%); color: var(--text); padding: 20px; }
+
+    body {
+      font-family: "Inter", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 20px;
+    }
+
     .dashboard { max-width: 1280px; margin: 0 auto; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; gap: 16px; flex-wrap: wrap; }
-    .header-title h1 { font-size: 22px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
-    .header-title span { font-size: 13px; color: var(--muted); margin-top: 4px; display: block; }
-    .pill { background: linear-gradient(90deg, rgba(56, 189, 248, 0.2), rgba(129, 140, 248, 0.2)); border-radius: 999px; padding: 4px 10px; font-size: 11px; color: var(--accent); border: 1px solid rgba(56, 189, 248, 0.3); }
-    .filters { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 12px; }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .header-title h1 {
+      font-size: 22px;
+      font-weight: 600;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .header-title span {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .pill {
+      background: #e0f2fe;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 11px;
+      color: var(--accent);
+      border: 1px solid #bae6fd;
+    }
+
+    .filters { margin-bottom: 12px; }
     .filters-row { display: flex; gap: 10px; flex-wrap: wrap; }
-    .filter-group { display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: var(--muted); }
-    .filter-wrapper { position: relative; display: inline-block; }
-    .filter-select { background: var(--bg-soft); border-radius: 999px; border: 1px solid var(--border); color: var(--text); padding: 6px 26px 6px 10px; font-size: 13px; outline: none; min-width: 160px; appearance: none; }
-    .filter-wrapper i { position: absolute; right: 9px; top: 50%; transform: translateY(-50%); font-size: 11px; color: var(--muted); pointer-events: none; }
-    .grid { display: grid; grid-template-columns: 1fr; gap: 16px; } 
-    .card { background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.05), var(--card)); border-radius: var(--radius-lg); border: 1px solid rgba(148, 163, 184, 0.15); box-shadow: 0 18px 45px rgba(15, 23, 42, 0.9); padding: 14px 16px; }
-    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 6px; }
-    .card-title { font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
-    .card-subtitle { font-size: 12px; color: var(--muted); }
-    .kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 4px; }
-    @media (max-width: 900px) { .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    .kpi-card { background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.9)); border-radius: var(--radius-md); border: 1px solid rgba(148, 163, 184, 0.2); padding: 10px; display: flex; flex-direction: column; gap: 4px; }
-    .kpi-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
-    .kpi-value-row { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; }
-    .kpi-value { font-size: 22px; font-weight: 600; }
-    .kpi-chip { font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid rgba(148, 163, 184, 0.3); display: inline-flex; align-items: center; gap: 4px; color: var(--muted); background: rgba(15, 23, 42, 0.9); }
-    .table-wrapper { margin-top: 8px; border-radius: var(--radius-md); border: 1px solid var(--border); overflow: hidden; }
-    .table-header-row, .table-row { display: grid; grid-template-columns: var(--cols); font-size: 12px; padding: 6px 10px; align-items: center; gap: 8px; }
-    .table-header-row { background: var(--bg-soft); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+
+    .filter-group { font-size: 11px; color: var(--muted); }
+    .filter-wrapper { position: relative; }
+
+    .filter-select {
+      background: var(--bg-soft);
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      padding: 6px 26px 6px 10px;
+      font-size: 13px;
+      min-width: 160px;
+      appearance: none;
+    }
+
+    .filter-wrapper i {
+      position: absolute;
+      right: 9px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .grid { display: grid; gap: 16px; }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      padding: 14px 16px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      align-items: center;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 500;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .card-subtitle {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    @media (max-width: 900px) {
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .kpi-card {
+      background: var(--bg-soft);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      padding: 10px;
+    }
+
+    .kpi-label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    .kpi-value {
+      font-size: 22px;
+      font-weight: 600;
+    }
+
+    .kpi-chip {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      background: #fff;
+    }
+
+    .pies-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .pie-card {
+      flex: 1;
+      background: var(--bg-soft);
+      border-radius: 12px;
+      padding: 12px;
+      border: 1px solid var(--border);
+    }
+
+    canvas { max-width: 100%; }
+
+    .table-wrapper {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+
+    .table-header-row,
+    .table-row {
+      display: grid;
+      grid-template-columns: var(--cols);
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+
+    .table-header-row {
+      background: var(--bg-soft);
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
     .table-body { max-height: 260px; overflow-y: auto; }
-    .mini-tag { font-size: 10px; color: var(--muted); padding: 2px 6px; border-radius: 999px; background: rgba(15, 23, 42, 0.9); border: 1px dashed rgba(148, 163, 184, 0.4); }
-    .loading { font-size: 13px; color: var(--muted); margin-top: 6px; }
-    .error { color: #f97373; font-size: 12px; margin-top: 6px; }
-    .toggle { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
-    .toggle input { width: 16px; height: 16px; }
-    .card-footer { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:10px; color:var(--muted); font-size:12px; }
-    .breakdown-area { margin-top: 12px; display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
-    .small { font-size:12px; color:var(--muted); }
+
+    .loading { font-size: 13px; color: var(--muted); }
+    .error { color: #dc2626; font-size: 12px; }
+
     #dynamicFilters { display: none !important; }
-    .pies-row { display:flex; gap:12px; margin-top:12px; }
-    .pie-card { flex:1; background: linear-gradient(135deg, rgba(15,23,42,0.95), rgba(15,23,42,0.9)); border-radius: 12px; padding: 12px; border:1px solid rgba(148,163,184,0.08); }
-    .pie-card .card-title { font-size:13px; margin-bottom:8px; }
-    canvas { max-width:100%; }
   </style>
 </head>
+
 <body>
-  <div class="dashboard">
-    <div class="header">
-      <div class="header-title">
-        <div>
-          <h1><i class="fa-solid fa-layer-group"></i> Thống kê tổng hợp Dữ liệu QLKT</h1>
-          <span>Thống kê dữ liệu các dự án, văn bản trình ký, nghiệm thu nội bộ.</span>
-        </div>
-      </div>
-      <span class="pill">PQLKT (C)Copyright 2025</span>
+<div class="dashboard">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-title">
+      <h1><i class="fa-solid fa-layer-group"></i> Thống kê tổng hợp Dữ liệu QLKT</h1>
+      <span>Thống kê dữ liệu các dự án, văn bản trình ký, nghiệm thu nội bộ.</span>
     </div>
+    <span class="pill">PQLKT © 2025</span>
+  </div>
 
-    <div class="filters">
-      <div class="filters-row">
-        <div class="filter-group">
-          <span>Loại dữ liệu</span>
-          <div class="filter-wrapper">
-            <select id="dataTypeFilter" class="filter-select">
-              <option value="QLKT">QLKT</option>
-              <option value="TRINH_VB">Trình VB</option>
-              <option value="NGHIEM_THU_NB">Nghiệm thu NB</option>
-              <option value="TONG_CONG">Tổng cộng</option>
-            </select>
-            <i class="fa-solid fa-chevron-down"></i>
-          </div>
-        </div>
-        <div class="filter-group">
-          <span>Năm</span>
-          <div class="filter-wrapper">
-            <select id="yearFilter" class="filter-select">
-              <option value="all">Tất cả</option>
-            </select>
-            <i class="fa-solid fa-chevron-down"></i>
-          </div>
-        </div>
-        <div class="filter-group">
-          <span>Tháng</span>
-          <div class="filter-wrapper">
-            <select id="monthFilter" class="filter-select">
-              <option value="all">Cả năm</option>
-              <option value="1">01</option><option value="2">02</option>
-              <option value="3">03</option><option value="4">04</option>
-              <option value="5">05</option><option value="6">06</option>
-              <option value="7">07</option><option value="8">08</option>
-              <option value="9">09</option><option value="10">10</option>
-              <option value="11">11</option><option value="12">12</option>
-            </select>
-            <i class="fa-solid fa-chevron-down"></i>
-          </div>
+  <!-- FILTER -->
+  <div class="filters">
+    <div class="filters-row">
+      <div class="filter-group">
+        <span>Loại dữ liệu</span>
+        <div class="filter-wrapper">
+          <select id="dataTypeFilter" class="filter-select">
+            <option value="QLKT">QLKT</option>
+            <option value="TRINH_VB">Trình VB</option>
+            <option value="NGHIEM_THU_NB">Nghiệm thu NB</option>
+            <option value="TONG_CONG">Tổng cộng</option>
+          </select>
+          <i class="fa-solid fa-chevron-down"></i>
         </div>
       </div>
-      <div id="dynamicFilters" class="filters-row"></div>
-    </div>
 
-    <!-- MAIN: KPI + CHARTS -->
-    <div class="grid">
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title"><i class="fa-solid fa-gauge-high"></i> Chỉ số tổng hợp</div>
-            <div class="card-subtitle">KPI và biểu đồ theo loại dữ liệu và bộ lọc.</div>
-          </div>
-          <label class="toggle" title="Khi bật: biểu đồ cột hiển thị tổng cộng theo tháng cho năm đang lọc">
-            <input type="checkbox" id="totalMonthlyToggle" />
-            <span>Tổng cộng theo tháng</span>
-          </label>
-        </div>
-
-        <div class="kpi-grid" id="kpiGrid"></div>
-        <div class="loading" id="loadingKpi">Đang tải dữ liệu từ Google Sheets...</div>
-        <div class="error" id="errorBox" style="display:none;"></div>
-
-        <!-- Biểu đồ tháng/năm -->
-        <div style="margin-top: 10px;">
-          <div class="card-header">
-            <div class="card-title"><i class="fa-solid fa-chart-column"></i> Biểu đồ theo tháng/năm</div>
-            <span class="mini-tag">Số lượng bản ghi theo tháng trong năm đang lọc</span>
-          </div>
-          <!-- Chiều cao 50% so với bản gốc (100px) -->
-          <canvas id="monthChart" height="80"></canvas>
-          <div class="card-footer">
-            <div>Đơn vị: số bản ghi / tháng</div>
-          </div>
-        </div>
-
-        <!-- Hai pie charts -->
-        <div class="pies-row">
-          <div class="pie-card">
-            <div class="card-title"><i class="fa-solid fa-chart-pie"></i> Phân bố theo loại dữ liệu</div>
-            <canvas id="pieChart" height="220"></canvas>
-            <canvas id="pieChart" height="180"></canvas>
-          </div>
-          <div class="pie-card">
-            <div class="card-title"><i class="fa-solid fa-chart-pie"></i> Phân tích theo trường</div>
-            <div class="breakdown-area" style="margin-bottom:8px;">
-              <div class="filter-group" style="min-width:180px;">
-                <div class="filter-wrapper">
-                  <select id="breakdownField" class="filter-select">
-                    <option value="none">Chọn trường để phân tích</option>
-                  </select>
-                  <i class="fa-solid fa-chevron-down"></i>
-                </div>
-              </div>
-              <div class="small">Áp dụng bộ lọc hiện hành</div>
-            </div>
-            <canvas id="breakdownPie" height="220"></canvas>
-            <canvas id="breakdownPie" height="180"></canvas>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- TABLE -->
-    <div class="card" style="margin-top:20px;">
-      <div class="card-header">
-        <div>
-          <div class="card-title"><i class="fa-solid fa-table-list"></i> Danh sách theo bộ lọc</div>
-          <div class="card-subtitle">Hiển thị đúng cột theo từng loại dữ liệu hoặc tổng hợp theo năm.</div>
+      <div class="filter-group">
+        <span>Năm</span>
+        <div class="filter-wrapper">
+          <select id="yearFilter" class="filter-select">
+            <option value="all">Tất cả</option>
+          </select>
+          <i class="fa-solid fa-chevron-down"></i>
         </div>
       </div>
-      <div class="table-wrapper">
-        <div id="tableHeader" class="table-header-row" style="--cols: 2fr 1fr 1fr 1fr 1fr;"></div>
-        <div class="table-body" id="tableBody"></div>
-      </div>
 
-      <div id="cardFooter" class="card-footer" style="display:none;">
-        <div id="footerText"></div>
-        <div class="mini-tag">Nguồn: P.QLKT</div>
+      <div class="filter-group">
+        <span>Tháng</span>
+        <div class="filter-wrapper">
+          <select id="monthFilter" class="filter-select">
+            <option value="all">Cả năm</option>
+            <option value="1">01</option><option value="2">02</option>
+            <option value="3">03</option><option value="4">04</option>
+            <option value="5">05</option><option value="6">06</option>
+            <option value="7">07</option><option value="8">08</option>
+            <option value="9">09</option><option value="10">10</option>
+            <option value="11">11</option><option value="12">12</option>
+          </select>
+          <i class="fa-solid fa-chevron-down"></i>
+        </div>
       </div>
     </div>
   </div>
+
+  <!-- KPI + CHART -->
+  <div class="grid">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title"><i class="fa-solid fa-gauge-high"></i> Chỉ số tổng hợp</div>
+          <div class="card-subtitle">KPI và biểu đồ</div>
+        </div>
+      </div>
+
+      <div class="kpi-grid" id="kpiGrid"></div>
+      <div class="loading" id="loadingKpi">Đang tải dữ liệu…</div>
+      <div class="error" id="errorBox" style="display:none"></div>
+
+      <canvas id="monthChart" height="80"></canvas>
+
+      <div class="pies-row">
+        <div class="pie-card">
+          <div class="card-title"><i class="fa-solid fa-chart-pie"></i> Phân bố loại dữ liệu</div>
+          <canvas id="pieChart"></canvas>
+        </div>
+
+        <div class="pie-card">
+          <div class="card-title"><i class="fa-solid fa-chart-pie"></i> Phân tích theo trường</div>
+          <select id="breakdownField" class="filter-select"></select>
+          <canvas id="breakdownPie"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="card" style="margin-top:20px">
+    <div class="card-header">
+      <div class="card-title"><i class="fa-solid fa-table-list"></i> Danh sách dữ liệu</div>
+    </div>
+    <div class="table-wrapper">
+      <div id="tableHeader" class="table-header-row" style="--cols:1fr 1fr"></div>
+      <div id="tableBody" class="table-body"></div>
+    </div>
+  </div>
+
+</div>
 
 <script>
   // ====== CẤU HÌNH GOOGLE SHEETS ======
