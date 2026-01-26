@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
@@ -274,8 +273,6 @@
     }
 
     canvas { max-width:100%; }
-
-    #dynamicFilters { display: none !important; }
   </style>
 </head>
 
@@ -390,15 +387,11 @@
   const dataTypeFilter = document.getElementById("dataTypeFilter");
   const yearFilter   = document.getElementById("yearFilter");
   const monthFilter  = document.getElementById("monthFilter");
-  const dynamicFilters = document.getElementById("dynamicFilters"); 
   const kpiGrid      = document.getElementById("kpiGrid");
   const tableHeader  = document.getElementById("tableHeader");
   const tableBody    = document.getElementById("tableBody");
   const loadingKpi   = document.getElementById("loadingKpi");
   const errorBox     = document.getElementById("errorBox");
-  const totalMonthlyToggle = document.getElementById("totalMonthlyToggle");
-  const cardFooter = document.getElementById("cardFooter");
-  const footerText = document.getElementById("footerText");
   const breakdownField = document.getElementById("breakdownField");
 
   let dataQLKT = [], dataTRINH_VB = [], dataNGHIEM_THU_NB = [];
@@ -508,11 +501,6 @@
     return false;
   }
 
-  function buildDynamicFilters(schema, data) {
-    dynamicFilters.innerHTML = "";
-    return;
-  }
-
   function applyFiltersToData(data, schema) {
     const year = yearFilter.value;
     const month = monthFilter.value;
@@ -589,17 +577,7 @@
     const months = Array.from({ length: 12 }, (_, i) => i + 1);
 
     let dataSourceForChart;
-    if (totalMonthlyToggle.checked) {
-      const all = [...dataQLKT, ...dataTRINH_VB, ...dataNGHIEM_THU_NB];
-      dataSourceForChart = all.filter(r => {
-        const y = getYear(r), m = getMonth(r);
-        if (yearFilter.value !== "all" && String(y) !== String(yearFilter.value)) return false;
-        if (monthFilter.value !== "all" && String(m) !== String(monthFilter.value)) return false;
-        return true;
-      });
-    } else {
-      dataSourceForChart = filtered;
-    }
+    dataSourceForChart = filtered;
 
     const data = months.map(m => dataSourceForChart.filter(r => getMonth(r) === m && rowHasMeaningfulData(r)).length);
 
@@ -862,21 +840,12 @@
     else if (dataTypeFilter.value === "NGHIEM_THU_NB") sourceData = dataNGHIEM_THU_NB;
     else sourceData = [...dataQLKT, ...dataTRINH_VB, ...dataNGHIEM_THU_NB];
 
-    buildDynamicFilters(schema, sourceData);
-
     const filtered = applyFiltersToData(sourceData, schema);
 
     renderKPIData(filtered);
     renderChart(filtered);
     renderPieChart();
     renderTable(schema, filtered);
-
-    if (dataTypeFilter.value === "QLKT") {
-      footerText.textContent = "Dữ liệu QLKT.";
-      cardFooter.style.display = "flex";
-    } else {
-      cardFooter.style.display = "none";
-    }
 
     populateBreakdownOptions();
     renderBreakdownPie(breakdownField.value || "none");
@@ -909,8 +878,8 @@
     dataTypeFilter.addEventListener("change", () => { updateDashboard(); });
     yearFilter.addEventListener("change", updateDashboard);
     monthFilter.addEventListener("change", updateDashboard);
-    totalMonthlyToggle.addEventListener("change", updateDashboard);
     breakdownField.addEventListener("change", (e) => renderBreakdownPie(e.target.value));
   });
 </script>
 </body>
+</html>
