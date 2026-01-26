@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8" />
-<title>Thống kê dữ liệu P.QLKT</title>
+<title>Dashboard Thống kê P.QLKT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -22,12 +22,13 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: "Inter", sans-serif; background: var(--bg-body); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+    body { font-family: "Inter", sans-serif; background: var(--bg-body); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
     /* HEADER */
     .header {
       height: 64px; background: var(--bg-surface); border-bottom: 1px solid var(--border);
       display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-shrink: 0;
+      z-index: 10;
     }
     .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; color: var(--primary); }
     .controls { display: flex; gap: 12px; }
@@ -36,8 +37,9 @@
     .select-box { position: relative; }
     .select-box select {
       appearance: none; background: #fff; border: 1px solid var(--border); padding: 8px 32px 8px 12px;
-      border-radius: 8px; font-size: 13px; cursor: pointer; min-width: 140px;
+      border-radius: 8px; font-size: 13px; cursor: pointer; min-width: 140px; outline: none; transition: border 0.2s;
     }
+    .select-box select:hover { border-color: var(--primary); }
     .select-box i { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 10px; color: var(--text-secondary); pointer-events: none; }
 
     /* LAYOUT */
@@ -45,13 +47,15 @@
     .container { max-width: 1400px; margin: 0 auto; display: grid; gap: 24px; }
 
     .card { background: var(--bg-surface); border-radius: var(--radius); border: 1px solid var(--border); padding: 20px; box-shadow: var(--shadow); }
-    .card-title { font-size: 15px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .card-title { font-size: 15px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; }
+    .card-title div { display: flex; align-items: center; gap: 8px; }
 
     /* KPI */
     .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
-    .kpi-card { background: #fff; padding: 20px; border-radius: var(--radius); border: 1px solid var(--border); }
-    .kpi-val { font-size: 24px; font-weight: 700; margin-top: 4px; }
-    .kpi-label { font-size: 12px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; }
+    .kpi-card { background: #fff; padding: 20px; border-radius: var(--radius); border: 1px solid var(--border); transition: transform 0.2s; }
+    .kpi-card:hover { transform: translateY(-2px); }
+    .kpi-val { font-size: 24px; font-weight: 700; margin-top: 4px; color: var(--text-main); }
+    .kpi-label { font-size: 12px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
 
     /* CHARTS */
     .charts-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
@@ -60,18 +64,26 @@
     /* TABLE */
     .table-wrapper { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
-    th { background: #f8fafc; padding: 12px 16px; font-weight: 600; color: var(--text-secondary); border-bottom: 1px solid var(--border); }
-    td { padding: 12px 16px; border-bottom: 1px solid var(--border); }
-    tr:hover { background: #f1f5f9; }
+    th { background: #f8fafc; padding: 12px 16px; font-weight: 600; color: var(--text-secondary); border-bottom: 1px solid var(--border); white-space: nowrap; }
+    td { padding: 12px 16px; border-bottom: 1px solid var(--border); color: var(--text-main); }
+    tr:hover { background: #f8fafc; }
 
-    .loading { position: fixed; inset: 0; background: rgba(255,255,255,0.8); display: flex; justify-content: center; align-items: center; z-index: 100; }
-    .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--primary); border-radius: 50%; animation: spin 0.6s linear infinite; }
+    .loading { position: fixed; inset: 0; background: rgba(255,255,255,0.9); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; }
+    .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--primary); border-radius: 50%; animation: spin 0.6s linear infinite; margin-bottom: 12px; }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 1024px) {
+        .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+        .charts-grid { grid-template-columns: 1fr; }
+    }
 </style>
 </head>
 <body>
 
-<div id="loader" class="loading"><div class="spinner"></div></div>
+<div id="loader" class="loading">
+    <div class="spinner"></div>
+    <p style="font-size: 14px; color: var(--text-secondary);">Đang đồng bộ dữ liệu...</p>
+</div>
 
 <header class="header">
     <div class="brand"><i class="fa-solid fa-layer-group"></i> PQLKT DASHBOARD</div>
@@ -98,19 +110,23 @@
 
         <div class="charts-grid">
             <div class="card">
-                <div class="card-title"><i class="fa-solid fa-chart-line"></i> Xu hướng theo tháng</div>
+                <div class="card-title"><div><i class="fa-solid fa-chart-line"></i> Xu hướng theo tháng</div></div>
                 <div class="chart-container"><canvas id="lineChart"></canvas></div>
             </div>
             <div class="card">
-                <div class="card-title"><i class="fa-solid fa-chart-pie"></i> Phân tích: 
-                    <select id="breakdownField" style="border:none; font-weight:600; color:var(--primary); cursor:pointer; outline:none;"></select>
+                <div class="card-title">
+                    <div><i class="fa-solid fa-chart-pie"></i> Phân tích</div>
+                    <div class="select-box">
+                        <select id="breakdownField" style="min-width: 160px; font-weight: 600; color: var(--primary); border: none; padding: 4px 24px 4px 8px;"></select>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
                 </div>
-                <div class="chart-container"><canvas id="pieChart"></canvas></div>
+                <div class="chart-container" style="height: 280px;"><canvas id="pieChart"></canvas></div>
             </div>
         </div>
 
         <div class="card">
-            <div class="card-title"><i class="fa-solid fa-table"></i> Dữ liệu chi tiết</div>
+            <div class="card-title"><div><i class="fa-solid fa-table"></i> Dữ liệu chi tiết</div></div>
             <div class="table-wrapper">
                 <table id="dataTable">
                     <thead><tr id="tableHead"></tr></thead>
@@ -128,20 +144,25 @@ const SPREADSHEET_ID_HS = "1nxlqtzGM8eXao25nodxwKr6Cu70BiFJNW12b06zF1d4";
 let rawData = { QLKT: [], TRINH_VB: [], NGHIEM_THU_NB: [], NHANTRAHS: [] };
 let charts = {};
 
-// Cấu hình các trường KHÔNG dùng để thống kê pie chart (tránh nhiễu)
-const BLACKLIST_FIELDS = ["Tên dự án", "Ghi chú", "Ngày", "Nội dung", "Về việc", "STT", "Mục đích trình", "Tóm tắt"];
+// Cấu hình các trường KHÔNG dùng để thống kê pie chart (tránh nhiễu dữ liệu văn bản dài)
+const BLACKLIST_FIELDS = ["Tên dự án", "Ghi chú", "Ngày", "Nội dung", "Về việc", "STT", "Mục đích trình", "Tóm tắt", "Số hiệu", "Ký hiệu", "Trích yếu"];
 
 async function fetchData(id, sheet) {
-    const url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheet)}`;
-    const res = await fetch(url);
-    const text = await res.text();
-    const json = JSON.parse(text.substring(47, text.length - 2));
-    const cols = json.table.cols.map(c => c.label || "");
-    return json.table.rows.map(r => {
-        let obj = {};
-        r.c.forEach((cell, i) => { if(cols[i]) obj[cols[i]] = cell ? cell.v : ""; });
-        return obj;
-    });
+    try {
+        const url = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheet)}`;
+        const res = await fetch(url);
+        const text = await res.text();
+        const json = JSON.parse(text.substring(47, text.length - 2));
+        const cols = json.table.cols.map(c => c.label || "");
+        return json.table.rows.map(r => {
+            let obj = {};
+            r.c.forEach((cell, i) => { if(cols[i]) obj[cols[i]] = cell ? cell.v : ""; });
+            return obj;
+        });
+    } catch (e) {
+        console.error("Lỗi fetch sheet:", sheet, e);
+        return [];
+    }
 }
 
 function parseDate(val) {
@@ -150,22 +171,23 @@ function parseDate(val) {
         const m = val.match(/\d+/g);
         return new Date(m[0], m[1], m[2]);
     }
-    return new Date(val);
+    const d = new Date(val);
+    return isNaN(d.getTime()) ? null : d;
 }
 
 function updateKPI(filtered) {
     const container = document.getElementById('kpiContainer');
     const total = filtered.length;
     
-    // Tính % hoàn thành chuẩn (không quá 100)
     let progressSum = 0;
     let count = 0;
     filtered.forEach(r => {
-        let val = r["Đánh giá tỉ lệ hoàn thành công việc"] || r["Tỉ lệ"];
-        if (val) {
+        // Tìm cột chứa thông tin phần trăm hoàn thành
+        let val = r["Đánh giá tỉ lệ hoàn thành công việc"] || r["Tỉ lệ hoàn thành"] || r["Tỉ lệ (%)"] || r["Tỉ lệ"];
+        if (val !== undefined && val !== "") {
             let num = parseFloat(String(val).replace('%',''));
             if (!isNaN(num)) {
-                progressSum += Math.min(num, 100); // Sửa lỗi khóa ở 100%
+                progressSum += Math.min(num, 100); // FIX: Không bao giờ vượt quá 100%
                 count++;
             }
         }
@@ -175,8 +197,8 @@ function updateKPI(filtered) {
     container.innerHTML = `
         <div class="kpi-card"><div class="kpi-label">Tổng số hồ sơ</div><div class="kpi-val">${total}</div></div>
         <div class="kpi-card"><div class="kpi-label">Tiến độ TB</div><div class="kpi-val">${avg}%</div></div>
-        <div class="kpi-card"><div class="kpi-label">Năm đang xem</div><div class="kpi-val">${document.getElementById('yearFilter').value}</div></div>
-        <div class="kpi-card"><div class="kpi-label">Trạng thái</div><div class="kpi-val" style="color:#10b981">Live</div></div>
+        <div class="kpi-card"><div class="kpi-label">Năm đang xem</div><div class="kpi-val">${document.getElementById('yearFilter').value === 'all' ? 'Tất cả' : document.getElementById('yearFilter').value}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Trạng thái</div><div class="kpi-val" style="color:#10b981">Đang kết nối</div></div>
     `;
 }
 
@@ -186,17 +208,17 @@ function renderPie(data, field) {
 
     const counts = {};
     data.forEach(r => {
-        const val = r[field] || "N/A";
+        const val = r[field] ? String(r[field]).trim() : "Chưa xác định";
         counts[val] = (counts[val] || 0) + 1;
     });
 
-    // Gom nhóm "Khác" cho các mục < 3%
     const total = data.length;
     let finalData = {};
     let otherCount = 0;
 
+    // Logic gom nhóm "Khác" cho các hạng mục chiếm dưới 3%
     Object.entries(counts).forEach(([k, v]) => {
-        if ((v / total) < 0.03) {
+        if ((v / total) < 0.03 && Object.keys(counts).length > 5) {
             otherCount += v;
         } else {
             finalData[k] = v;
@@ -210,10 +232,19 @@ function renderPie(data, field) {
             labels: Object.keys(finalData),
             datasets: [{
                 data: Object.values(finalData),
-                backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#94a3b8']
+                backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#94a3b8', '#ec4899'],
+                borderWidth: 2,
+                borderColor: '#ffffff'
             }]
         },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: {size: 11} } } } }
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            cutout: '60%',
+            plugins: { 
+                legend: { position: 'bottom', labels: { boxWidth: 10, font: {size: 11}, padding: 15 } } 
+            } 
+        }
     });
 }
 
@@ -223,32 +254,48 @@ function renderLine(data) {
 
     const months = Array(12).fill(0);
     data.forEach(r => {
-        const d = parseDate(r["Ngày"] || r["Ngày nhận HS"]);
+        const d = parseDate(r["Ngày"] || r["Ngày nhận HS"] || r["Ngày trình"] || r["Ngày nghiệm thu"]);
         if (d) months[d.getMonth()]++;
     });
 
     charts.line = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: ['T1','T2','T3','T4','T5','T6','T7','T8','T9','T10','T11','T12'],
+            labels: ['Th.1','Th.2','Th.3','Th.4','Th.5','Th.6','Th.7','Th.8','Th.9','Th.10','Th.11','Th.12'],
             datasets: [{
-                label: 'Số lượng',
+                label: 'Số lượng hồ sơ',
                 data: months,
                 borderColor: '#6366f1',
                 backgroundColor: 'rgba(99, 102, 241, 0.1)',
                 fill: true,
-                tension: 0.4
+                tension: 0.4,
+                pointRadius: 4,
+                pointBackgroundColor: '#6366f1'
             }]
         },
-        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            scales: { 
+                y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+                x: { grid: { display: false } }
+            } 
+        }
     });
 }
 
 function renderTable(data) {
-    if (data.length === 0) return;
-    const cols = Object.keys(data[0]).slice(0, 7); // Giới hạn 7 cột đầu cho đẹp
-    document.getElementById('tableHead').innerHTML = cols.map(c => `<th>${c}</th>`).join('');
-    document.getElementById('tableBody').innerHTML = data.slice(0, 50).map(r => 
+    const head = document.getElementById('tableHead');
+    const body = document.getElementById('tableBody');
+    if (data.length === 0) {
+        head.innerHTML = "";
+        body.innerHTML = '<tr><td colspan="100%" style="text-align:center; padding:40px;">Không có dữ liệu phù hợp</td></tr>';
+        return;
+    }
+
+    const cols = Object.keys(data[0]).slice(0, 8); // Lấy tối đa 8 cột đầu
+    head.innerHTML = cols.map(c => `<th>${c}</th>`).join('');
+    body.innerHTML = data.slice(0, 100).map(r => 
         `<tr>${cols.map(c => `<td>${r[c] || ''}</td>`).join('')}</tr>`
     ).join('');
 }
@@ -256,34 +303,40 @@ function renderTable(data) {
 function updateDashboard() {
     const type = document.getElementById('typeFilter').value;
     const year = document.getElementById('yearFilter').value;
+    const breakdownField = document.getElementById('breakdownField');
     
     let filtered = rawData[type].filter(r => {
-        const d = parseDate(r["Ngày"] || r["Ngày nhận HS"]);
+        const d = parseDate(r["Ngày"] || r["Ngày nhận HS"] || r["Ngày trình"] || r["Ngày nghiệm thu"]);
         if (year === "all") return true;
         return d && d.getFullYear().toString() === year;
     });
 
-    // Cập nhật danh sách trường có thể thống kê (Pie Chart)
-    const breakdownSelect = document.getElementById('breakdownField');
-    const firstRow = filtered[0] || {};
-    const validFields = Object.keys(firstRow).filter(f => !BLACKLIST_FIELDS.some(b => f.includes(b)));
-    
-    breakdownSelect.innerHTML = validFields.map(f => `<option value="${f}">${f}</option>`).join('');
-    
+    // Cập nhật danh sách các trường hợp lệ để thống kê (lọc bỏ blacklist)
+    if (filtered.length > 0) {
+        const firstRow = filtered[0];
+        const currentField = breakdownField.value;
+        const validFields = Object.keys(firstRow).filter(f => {
+            return !BLACKLIST_FIELDS.some(b => f.toLowerCase().includes(b.toLowerCase()));
+        });
+        
+        breakdownSelectHTML = validFields.map(f => `<option value="${f}" ${f === currentField ? 'selected' : ''}>${f}</option>`).join('');
+        breakdownField.innerHTML = breakdownSelectHTML;
+    }
+
     updateKPI(filtered);
     renderLine(filtered);
-    renderPie(filtered, breakdownSelect.value || validFields[0]);
+    renderPie(filtered, breakdownField.value || Object.keys(filtered[0])[0]);
     renderTable(filtered);
 }
 
-// Event Listeners
+// Listeners
 document.getElementById('typeFilter').addEventListener('change', updateDashboard);
 document.getElementById('yearFilter').addEventListener('change', updateDashboard);
 document.getElementById('breakdownField').addEventListener('change', (e) => {
     const type = document.getElementById('typeFilter').value;
     const year = document.getElementById('yearFilter').value;
     let filtered = rawData[type].filter(r => {
-        const d = parseDate(r["Ngày"] || r["Ngày nhận HS"]);
+        const d = parseDate(r["Ngày"] || r["Ngày nhận HS"] || r["Ngày trình"] || r["Ngày nghiệm thu"]);
         return year === "all" || (d && d.getFullYear().toString() === year);
     });
     renderPie(filtered, e.target.value);
@@ -297,26 +350,32 @@ async function init() {
             fetchData(SPREADSHEET_ID, "QLKT Nghiệm thu nội bộ Sort"),
             fetchData(SPREADSHEET_ID_HS, "Nhan-Tra HS trinh ky")
         ]);
+        
         rawData.QLKT = d1;
         rawData.TRINH_VB = d2;
         rawData.NGHIEM_THU_NB = d3;
         rawData.NHANTRAHS = d4;
 
-        // Tạo danh sách năm
+        // Tự động trích xuất danh sách năm từ dữ liệu
         const years = new Set();
         Object.values(rawData).flat().forEach(r => {
-            const d = parseDate(r["Ngày"] || r["Ngày nhận HS"]);
+            const d = parseDate(r["Ngày"] || r["Ngày nhận HS"] || r["Ngày trình"] || r["Ngày nghiệm thu"]);
             if (d) years.add(d.getFullYear());
         });
+        
         const yearFilter = document.getElementById('yearFilter');
-        Array.from(years).sort((a,b)=>b-a).forEach(y => {
-            yearFilter.innerHTML += `<option value="${y}">${y}</option>`;
+        Array.from(years).sort((a,b) => b - a).forEach(y => {
+            const opt = document.createElement('option');
+            opt.value = y;
+            opt.textContent = `Năm ${y}`;
+            yearFilter.appendChild(opt);
         });
 
         updateDashboard();
         document.getElementById('loader').style.display = 'none';
     } catch (e) {
-        alert("Lỗi tải dữ liệu, vui lòng kiểm tra quyền truy cập Sheet!");
+        console.error(e);
+        alert("Không thể kết nối với dữ liệu. Hãy đảm bảo Google Sheets đã được 'Chia sẻ với bất kỳ ai có liên kết'.");
     }
 }
 
